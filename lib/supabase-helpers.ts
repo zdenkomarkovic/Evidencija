@@ -1,7 +1,7 @@
 // Supabase helper funkcije za pristup podacima
 // Zamenjuje MongoDB modele
 
-import supabase from './supabase';
+import supabase from "./supabase";
 
 // =====================================================
 // KUPCI
@@ -15,7 +15,7 @@ export interface Kupac {
   email2?: string | null;
   telefon: string;
   telefon2?: string | null;
-  nacin_placanja?: 'fiskalni' | 'faktura' | null;
+  nacin_placanja?: "fiskalni" | "faktura" | null;
   domen?: string | null;
   arhiviran?: boolean;
   created_at: string;
@@ -24,13 +24,13 @@ export interface Kupac {
 
 export async function getKupci(includeArhivirani = false) {
   let query = supabase
-    .from('kupci')
-    .select('*')
-    .order('created_at', { ascending: false });
+    .from("kupci")
+    .select("*")
+    .order("created_at", { ascending: false });
 
   // Podrazumevano ne prikazujemo arhivirane kupce
   if (!includeArhivirani) {
-    query = query.eq('arhiviran', false);
+    query = query.eq("arhiviran", false);
   }
 
   const { data, error } = await query;
@@ -56,10 +56,10 @@ export async function getKupci(includeArhivirani = false) {
 
 export async function getArhiviraniKupci() {
   const { data, error } = await supabase
-    .from('kupci')
-    .select('*')
-    .eq('arhiviran', true)
-    .order('created_at', { ascending: false });
+    .from("kupci")
+    .select("*")
+    .eq("arhiviran", true)
+    .order("created_at", { ascending: false });
 
   if (error) throw error;
 
@@ -82,9 +82,9 @@ export async function getArhiviraniKupci() {
 
 export async function arhivirajKupca(id: string, arhiviran: boolean) {
   const { data, error } = await supabase
-    .from('kupci')
+    .from("kupci")
     .update({ arhiviran })
-    .eq('id', id)
+    .eq("id", id)
     .select()
     .single();
 
@@ -94,18 +94,20 @@ export async function arhivirajKupca(id: string, arhiviran: boolean) {
 
 export async function getKupacById(id: string) {
   const { data, error } = await supabase
-    .from('kupci')
-    .select('*')
-    .eq('id', id)
+    .from("kupci")
+    .select("*")
+    .eq("id", id)
     .single();
 
   if (error) throw error;
   return data as Kupac;
 }
 
-export async function createKupac(kupac: Omit<Kupac, 'id' | 'created_at' | 'updated_at'>) {
+export async function createKupac(
+  kupac: Omit<Kupac, "id" | "created_at" | "updated_at">
+) {
   const { data, error } = await supabase
-    .from('kupci')
+    .from("kupci")
     .insert(kupac)
     .select()
     .single();
@@ -114,11 +116,14 @@ export async function createKupac(kupac: Omit<Kupac, 'id' | 'created_at' | 'upda
   return data as Kupac;
 }
 
-export async function updateKupac(id: string, updates: Partial<Omit<Kupac, 'id' | 'created_at' | 'updated_at'>>) {
+export async function updateKupac(
+  id: string,
+  updates: Partial<Omit<Kupac, "id" | "created_at" | "updated_at">>
+) {
   const { data, error } = await supabase
-    .from('kupci')
+    .from("kupci")
     .update(updates)
-    .eq('id', id)
+    .eq("id", id)
     .select()
     .single();
 
@@ -127,10 +132,7 @@ export async function updateKupac(id: string, updates: Partial<Omit<Kupac, 'id' 
 }
 
 export async function deleteKupac(id: string) {
-  const { error } = await supabase
-    .from('kupci')
-    .delete()
-    .eq('id', id);
+  const { error } = await supabase.from("kupci").delete().eq("id", id);
 
   if (error) throw error;
 }
@@ -146,28 +148,34 @@ export interface Rata {
   datum_dospeca: string;
   placeno: boolean;
   datum_placanja?: string | null;
-  nacin_placanja?: 'racun1' | 'racun2' | 'manual' | null;
+  nacin_placanja?: "racun1" | "racun2" | "manual" | null;
   podsetnik_poslat: boolean;
   created_at: string;
   updated_at: string;
   kupacId?: Kupac | null; // Za populate
 }
 
-export async function getRate(filters?: { kupac_id?: string; placeno?: boolean; includeArhivirani?: boolean }) {
+export async function getRate(filters?: {
+  kupac_id?: string;
+  placeno?: boolean;
+  includeArhivirani?: boolean;
+}) {
   let query = supabase
-    .from('rate')
-    .select(`
+    .from("rate")
+    .select(
+      `
       *,
       kupci (*)
-    `)
-    .order('datum_dospeca', { ascending: true });
+    `
+    )
+    .order("datum_dospeca", { ascending: true });
 
   if (filters?.kupac_id) {
-    query = query.eq('kupac_id', filters.kupac_id);
+    query = query.eq("kupac_id", filters.kupac_id);
   }
 
   if (filters?.placeno !== undefined) {
-    query = query.eq('placeno', filters.placeno);
+    query = query.eq("placeno", filters.placeno);
   }
 
   const { data, error } = await query;
@@ -177,18 +185,20 @@ export async function getRate(filters?: { kupac_id?: string; placeno?: boolean; 
   // Mapiranje za kompatibilnost sa frontend-om (snake_case -> camelCase, id -> _id)
   let mapped = data.map((rata) => ({
     _id: rata.id,
-    kupacId: rata.kupci ? {
-      _id: rata.kupci.id,
-      ime: rata.kupci.ime,
-      email: rata.kupci.email,
-      email2: rata.kupci.email2,
-      telefon: rata.kupci.telefon,
-      telefon2: rata.kupci.telefon2,
-      firma: rata.kupci.firma,
-      nacinPlacanja: rata.kupci.nacin_placanja,
-      domen: rata.kupci.domen,
-      arhiviran: rata.kupci.arhiviran,
-    } : null,
+    kupacId: rata.kupci
+      ? {
+          _id: rata.kupci.id,
+          ime: rata.kupci.ime,
+          email: rata.kupci.email,
+          email2: rata.kupci.email2,
+          telefon: rata.kupci.telefon,
+          telefon2: rata.kupci.telefon2,
+          firma: rata.kupci.firma,
+          nacinPlacanja: rata.kupci.nacin_placanja,
+          domen: rata.kupci.domen,
+          arhiviran: rata.kupci.arhiviran,
+        }
+      : null,
     iznos: rata.iznos,
     datumDospeca: rata.datum_dospeca,
     placeno: rata.placeno,
@@ -206,50 +216,58 @@ export async function getRate(filters?: { kupac_id?: string; placeno?: boolean; 
 }
 
 export async function getArhiviraneRate() {
-  let query = supabase
-    .from('rate')
-    .select(`
+  const query = supabase
+    .from("rate")
+    .select(
+      `
       *,
       kupci (*)
-    `)
-    .eq('kupci.arhiviran', true)
-    .order('datum_dospeca', { ascending: true });
+    `
+    )
+    .eq("kupci.arhiviran", true)
+    .order("datum_dospeca", { ascending: true });
 
   const { data, error } = await query;
 
   if (error) throw error;
 
-  return data.map((rata) => ({
-    _id: rata.id,
-    kupacId: rata.kupci ? {
-      _id: rata.kupci.id,
-      ime: rata.kupci.ime,
-      email: rata.kupci.email,
-      email2: rata.kupci.email2,
-      telefon: rata.kupci.telefon,
-      telefon2: rata.kupci.telefon2,
-      firma: rata.kupci.firma,
-      nacinPlacanja: rata.kupci.nacin_placanja,
-      domen: rata.kupci.domen,
-      arhiviran: rata.kupci.arhiviran,
-    } : null,
-    iznos: rata.iznos,
-    datumDospeca: rata.datum_dospeca,
-    placeno: rata.placeno,
-    datumPlacanja: rata.datum_placanja,
-    nacinPlacanja: rata.nacin_placanja,
-    podsetnikPoslat: rata.podsetnik_poslat,
-  })).filter((rata) => rata.kupacId?.arhiviran);
+  return data
+    .map((rata) => ({
+      _id: rata.id,
+      kupacId: rata.kupci
+        ? {
+            _id: rata.kupci.id,
+            ime: rata.kupci.ime,
+            email: rata.kupci.email,
+            email2: rata.kupci.email2,
+            telefon: rata.kupci.telefon,
+            telefon2: rata.kupci.telefon2,
+            firma: rata.kupci.firma,
+            nacinPlacanja: rata.kupci.nacin_placanja,
+            domen: rata.kupci.domen,
+            arhiviran: rata.kupci.arhiviran,
+          }
+        : null,
+      iznos: rata.iznos,
+      datumDospeca: rata.datum_dospeca,
+      placeno: rata.placeno,
+      datumPlacanja: rata.datum_placanja,
+      nacinPlacanja: rata.nacin_placanja,
+      podsetnikPoslat: rata.podsetnik_poslat,
+    }))
+    .filter((rata) => rata.kupacId?.arhiviran);
 }
 
 export async function getRataById(id: string) {
   const { data, error } = await supabase
-    .from('rate')
-    .select(`
+    .from("rate")
+    .select(
+      `
       *,
       kupci (*)
-    `)
-    .eq('id', id)
+    `
+    )
+    .eq("id", id)
     .single();
 
   if (error) throw error;
@@ -260,9 +278,11 @@ export async function getRataById(id: string) {
   };
 }
 
-export async function createRata(rata: Omit<Rata, 'id' | 'created_at' | 'updated_at'>) {
+export async function createRata(
+  rata: Omit<Rata, "id" | "created_at" | "updated_at">
+) {
   const { data, error } = await supabase
-    .from('rate')
+    .from("rate")
     .insert(rata)
     .select()
     .single();
@@ -271,11 +291,14 @@ export async function createRata(rata: Omit<Rata, 'id' | 'created_at' | 'updated
   return data as Rata;
 }
 
-export async function updateRata(id: string, updates: Partial<Omit<Rata, 'id' | 'created_at' | 'updated_at'>>) {
+export async function updateRata(
+  id: string,
+  updates: Partial<Omit<Rata, "id" | "created_at" | "updated_at">>
+) {
   const { data, error } = await supabase
-    .from('rate')
+    .from("rate")
     .update(updates)
-    .eq('id', id)
+    .eq("id", id)
     .select()
     .single();
 
@@ -284,10 +307,7 @@ export async function updateRata(id: string, updates: Partial<Omit<Rata, 'id' | 
 }
 
 export async function deleteRata(id: string) {
-  const { error } = await supabase
-    .from('rate')
-    .delete()
-    .eq('id', id);
+  const { error } = await supabase.from("rate").delete().eq("id", id);
 
   if (error) throw error;
 }
@@ -307,17 +327,22 @@ export interface Hosting {
   kupacId?: Kupac | null; // Za populate
 }
 
-export async function getHosting(filters?: { kupac_id?: string; includeArhivirani?: boolean }) {
+export async function getHosting(filters?: {
+  kupac_id?: string;
+  includeArhivirani?: boolean;
+}) {
   let query = supabase
-    .from('hosting')
-    .select(`
+    .from("hosting")
+    .select(
+      `
       *,
       kupci (*)
-    `)
-    .order('datum_obnavljanja', { ascending: true });
+    `
+    )
+    .order("datum_obnavljanja", { ascending: true });
 
   if (filters?.kupac_id) {
-    query = query.eq('kupac_id', filters.kupac_id);
+    query = query.eq("kupac_id", filters.kupac_id);
   }
 
   const { data, error } = await query;
@@ -327,18 +352,20 @@ export async function getHosting(filters?: { kupac_id?: string; includeArhiviran
   // Mapiranje za kompatibilnost sa frontend-om (snake_case -> camelCase, id -> _id)
   let mapped = data.map((host) => ({
     _id: host.id,
-    kupacId: host.kupci ? {
-      _id: host.kupci.id,
-      ime: host.kupci.ime,
-      email: host.kupci.email,
-      email2: host.kupci.email2,
-      telefon: host.kupci.telefon,
-      telefon2: host.kupci.telefon2,
-      firma: host.kupci.firma,
-      nacinPlacanja: host.kupci.nacin_placanja,
-      domen: host.kupci.domen,
-      arhiviran: host.kupci.arhiviran,
-    } : null,
+    kupacId: host.kupci
+      ? {
+          _id: host.kupci.id,
+          ime: host.kupci.ime,
+          email: host.kupci.email,
+          email2: host.kupci.email2,
+          telefon: host.kupci.telefon,
+          telefon2: host.kupci.telefon2,
+          firma: host.kupci.firma,
+          nacinPlacanja: host.kupci.nacin_placanja,
+          domen: host.kupci.domen,
+          arhiviran: host.kupci.arhiviran,
+        }
+      : null,
     datumPocetka: host.datum_pocetka,
     datumObnavljanja: host.datum_obnavljanja,
     podsetnikPoslat: host.podsetnik_poslat,
@@ -353,47 +380,55 @@ export async function getHosting(filters?: { kupac_id?: string; includeArhiviran
 }
 
 export async function getArhiviraniHosting() {
-  let query = supabase
-    .from('hosting')
-    .select(`
+  const query = supabase
+    .from("hosting")
+    .select(
+      `
       *,
       kupci (*)
-    `)
-    .eq('kupci.arhiviran', true)
-    .order('datum_obnavljanja', { ascending: true });
+    `
+    )
+    .eq("kupci.arhiviran", true)
+    .order("datum_obnavljanja", { ascending: true });
 
   const { data, error } = await query;
 
   if (error) throw error;
 
-  return data.map((host) => ({
-    _id: host.id,
-    kupacId: host.kupci ? {
-      _id: host.kupci.id,
-      ime: host.kupci.ime,
-      email: host.kupci.email,
-      email2: host.kupci.email2,
-      telefon: host.kupci.telefon,
-      telefon2: host.kupci.telefon2,
-      firma: host.kupci.firma,
-      nacinPlacanja: host.kupci.nacin_placanja,
-      domen: host.kupci.domen,
-      arhiviran: host.kupci.arhiviran,
-    } : null,
-    datumPocetka: host.datum_pocetka,
-    datumObnavljanja: host.datum_obnavljanja,
-    podsetnikPoslat: host.podsetnik_poslat,
-  })).filter((host) => host.kupacId?.arhiviran);
+  return data
+    .map((host) => ({
+      _id: host.id,
+      kupacId: host.kupci
+        ? {
+            _id: host.kupci.id,
+            ime: host.kupci.ime,
+            email: host.kupci.email,
+            email2: host.kupci.email2,
+            telefon: host.kupci.telefon,
+            telefon2: host.kupci.telefon2,
+            firma: host.kupci.firma,
+            nacinPlacanja: host.kupci.nacin_placanja,
+            domen: host.kupci.domen,
+            arhiviran: host.kupci.arhiviran,
+          }
+        : null,
+      datumPocetka: host.datum_pocetka,
+      datumObnavljanja: host.datum_obnavljanja,
+      podsetnikPoslat: host.podsetnik_poslat,
+    }))
+    .filter((host) => host.kupacId?.arhiviran);
 }
 
 export async function getHostingById(id: string) {
   const { data, error } = await supabase
-    .from('hosting')
-    .select(`
+    .from("hosting")
+    .select(
+      `
       *,
       kupci (*)
-    `)
-    .eq('id', id)
+    `
+    )
+    .eq("id", id)
     .single();
 
   if (error) throw error;
@@ -404,9 +439,11 @@ export async function getHostingById(id: string) {
   };
 }
 
-export async function createHosting(hosting: Omit<Hosting, 'id' | 'created_at' | 'updated_at'>) {
+export async function createHosting(
+  hosting: Omit<Hosting, "id" | "created_at" | "updated_at">
+) {
   const { data, error } = await supabase
-    .from('hosting')
+    .from("hosting")
     .insert(hosting)
     .select()
     .single();
@@ -415,11 +452,14 @@ export async function createHosting(hosting: Omit<Hosting, 'id' | 'created_at' |
   return data as Hosting;
 }
 
-export async function updateHosting(id: string, updates: Partial<Omit<Hosting, 'id' | 'created_at' | 'updated_at'>>) {
+export async function updateHosting(
+  id: string,
+  updates: Partial<Omit<Hosting, "id" | "created_at" | "updated_at">>
+) {
   const { data, error } = await supabase
-    .from('hosting')
+    .from("hosting")
     .update(updates)
-    .eq('id', id)
+    .eq("id", id)
     .select()
     .single();
 
@@ -428,10 +468,7 @@ export async function updateHosting(id: string, updates: Partial<Omit<Hosting, '
 }
 
 export async function deleteHosting(id: string) {
-  const { error } = await supabase
-    .from('hosting')
-    .delete()
-    .eq('id', id);
+  const { error } = await supabase.from("hosting").delete().eq("id", id);
 
   if (error) throw error;
 }
@@ -466,16 +503,18 @@ export interface GoogleAds {
 
 export async function getGoogleAds(filters?: { kupac_id?: string }) {
   let query = supabase
-    .from('google_ads')
-    .select(`
+    .from("google_ads")
+    .select(
+      `
       *,
       kupci (*),
       google_ads_nastavci (*)
-    `)
-    .order('datum_isteka', { ascending: true });
+    `
+    )
+    .order("datum_isteka", { ascending: true });
 
   if (filters?.kupac_id) {
-    query = query.eq('kupac_id', filters.kupac_id);
+    query = query.eq("kupac_id", filters.kupac_id);
   }
 
   const { data, error } = await query;
@@ -485,40 +524,46 @@ export async function getGoogleAds(filters?: { kupac_id?: string }) {
   // Mapiranje za kompatibilnost sa frontend-om (snake_case -> camelCase, id -> _id)
   return data.map((ads) => ({
     _id: ads.id,
-    kupacId: ads.kupci ? {
-      _id: ads.kupci.id,
-      ime: ads.kupci.ime,
-      email: ads.kupci.email,
-      email2: ads.kupci.email2,
-      telefon: ads.kupci.telefon,
-      telefon2: ads.kupci.telefon2,
-      firma: ads.kupci.firma,
-      nacinPlacanja: ads.kupci.nacin_placanja,
-      domen: ads.kupci.domen,
-    } : null,
+    kupacId: ads.kupci
+      ? {
+          _id: ads.kupci.id,
+          ime: ads.kupci.ime,
+          email: ads.kupci.email,
+          email2: ads.kupci.email2,
+          telefon: ads.kupci.telefon,
+          telefon2: ads.kupci.telefon2,
+          firma: ads.kupci.firma,
+          nacinPlacanja: ads.kupci.nacin_placanja,
+          domen: ads.kupci.domen,
+        }
+      : null,
     imeKampanje: ads.ime_kampanje,
     imeGoogleNaloga: ads.ime_google_naloga,
     datumPocetka: ads.datum_pocetka,
     datumIsteka: ads.datum_isteka,
     iznos: ads.iznos,
     placeno: ads.placeno,
-    nastavci: ads.google_ads_nastavci ? ads.google_ads_nastavci.map((n: GoogleAdsNastavak) => ({
-      datum: n.datum,
-      iznos: n.iznos,
-      placeno: n.placeno,
-    })) : [],
+    nastavci: ads.google_ads_nastavci
+      ? ads.google_ads_nastavci.map((n: GoogleAdsNastavak) => ({
+          datum: n.datum,
+          iznos: n.iznos,
+          placeno: n.placeno,
+        }))
+      : [],
   }));
 }
 
 export async function getGoogleAdsById(id: string) {
   const { data, error } = await supabase
-    .from('google_ads')
-    .select(`
+    .from("google_ads")
+    .select(
+      `
       *,
       kupci (*),
       google_ads_nastavci (*)
-    `)
-    .eq('id', id)
+    `
+    )
+    .eq("id", id)
     .single();
 
   if (error) throw error;
@@ -530,9 +575,11 @@ export async function getGoogleAdsById(id: string) {
   };
 }
 
-export async function createGoogleAds(ads: Omit<GoogleAds, 'id' | 'created_at' | 'updated_at' | 'nastavci'>) {
+export async function createGoogleAds(
+  ads: Omit<GoogleAds, "id" | "created_at" | "updated_at" | "nastavci">
+) {
   const { data, error } = await supabase
-    .from('google_ads')
+    .from("google_ads")
     .insert(ads)
     .select()
     .single();
@@ -541,11 +588,16 @@ export async function createGoogleAds(ads: Omit<GoogleAds, 'id' | 'created_at' |
   return data as GoogleAds;
 }
 
-export async function updateGoogleAds(id: string, updates: Partial<Omit<GoogleAds, 'id' | 'created_at' | 'updated_at' | 'nastavci'>>) {
+export async function updateGoogleAds(
+  id: string,
+  updates: Partial<
+    Omit<GoogleAds, "id" | "created_at" | "updated_at" | "nastavci">
+  >
+) {
   const { data, error } = await supabase
-    .from('google_ads')
+    .from("google_ads")
     .update(updates)
-    .eq('id', id)
+    .eq("id", id)
     .select()
     .single();
 
@@ -554,18 +606,18 @@ export async function updateGoogleAds(id: string, updates: Partial<Omit<GoogleAd
 }
 
 export async function deleteGoogleAds(id: string) {
-  const { error } = await supabase
-    .from('google_ads')
-    .delete()
-    .eq('id', id);
+  const { error } = await supabase.from("google_ads").delete().eq("id", id);
 
   if (error) throw error;
 }
 
 // Nastavci funkcije
-export async function addGoogleAdsNastavak(google_ads_id: string, nastavak: Omit<GoogleAdsNastavak, 'id' | 'google_ads_id' | 'created_at'>) {
+export async function addGoogleAdsNastavak(
+  google_ads_id: string,
+  nastavak: Omit<GoogleAdsNastavak, "id" | "google_ads_id" | "created_at">
+) {
   const { data, error } = await supabase
-    .from('google_ads_nastavci')
+    .from("google_ads_nastavci")
     .insert({
       google_ads_id,
       ...nastavak,
@@ -577,11 +629,16 @@ export async function addGoogleAdsNastavak(google_ads_id: string, nastavak: Omit
   return data as GoogleAdsNastavak;
 }
 
-export async function updateGoogleAdsNastavak(id: string, updates: Partial<Omit<GoogleAdsNastavak, 'id' | 'google_ads_id' | 'created_at'>>) {
+export async function updateGoogleAdsNastavak(
+  id: string,
+  updates: Partial<
+    Omit<GoogleAdsNastavak, "id" | "google_ads_id" | "created_at">
+  >
+) {
   const { data, error } = await supabase
-    .from('google_ads_nastavci')
+    .from("google_ads_nastavci")
     .update(updates)
-    .eq('id', id)
+    .eq("id", id)
     .select()
     .single();
 
@@ -591,9 +648,9 @@ export async function updateGoogleAdsNastavak(id: string, updates: Partial<Omit<
 
 export async function deleteGoogleAdsNastavak(id: string) {
   const { error } = await supabase
-    .from('google_ads_nastavci')
+    .from("google_ads_nastavci")
     .delete()
-    .eq('id', id);
+    .eq("id", id);
 
   if (error) throw error;
 }
