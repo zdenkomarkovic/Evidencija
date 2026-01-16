@@ -1,0 +1,100 @@
+[
+  {
+    "_id": "6945b655c6bc04461601dd63",
+    "kupacId": "69436866b3bfd19359b2208e",
+    "imeKampanje": "Majstor non stop 1",
+    "imeGoogleNaloga": "Majstor non stop",
+    "datumPocetka": "2025-12-04T00:00:00.000Z",
+    "datumIsteka": "2026-01-04T00:00:00.000Z",
+    "iznos": 6000,
+    "nastavci": [
+      {
+        "datum": "2026-01-04T00:00:00.000Z",
+        "iznos": 6000,
+        "placeno": false,
+        "_id": "695c24d9e194855ec703eeb8"
+      }
+    ],
+    "createdAt": "2025-12-19T20:32:21.443Z",
+    "updatedAt": "2026-01-05T20:53:45.711Z",
+    "__v": 0,
+    "placeno": true
+  },
+  {
+    "_id": "6945bb70631ffb1d8567b588",
+    "kupacId": "6945badb631ffb1d8567b556",
+    "imeKampanje": "Beo City Upravnim -  Manikam",
+    "imeGoogleNaloga": "Beo City Upravnik",
+    "datumPocetka": "2025-12-01T00:00:00.000Z",
+    "datumIsteka": "2026-01-01T00:00:00.000Z",
+    "iznos": 12000,
+    "placeno": true,
+    "nastavci": [
+      {
+        "datum": "2026-01-15T00:00:00.000Z",
+        "iznos": 12000,
+        "placeno": false,
+        "_id": "6965a871af0b6f44e154df6f"
+      }
+    ],
+    "createdAt": "2025-12-19T20:54:08.934Z",
+    "updatedAt": "2026-01-13T02:05:37.190Z",
+    "__v": 0
+  },
+  {
+    "_id": "6945c2c9631ffb1d8567b8ab",
+    "kupacId": "69436265b3bfd19359b21efd",
+    "imeKampanje": "Olivera Sancanin",
+    "imeGoogleNaloga": "San Spremanje",
+    "datumPocetka": "2025-11-27T00:00:00.000Z",
+    "datumIsteka": "2025-12-27T00:00:00.000Z",
+    "iznos": 16500,
+    "placeno": true,
+    "nastavci": [
+      {
+        "datum": "2025-12-27T00:00:00.000Z",
+        "iznos": 6000,
+        "placeno": true,
+        "_id": "695474dfa748f283bcc0b65f"
+      }
+    ],
+    "createdAt": "2025-12-19T21:25:29.495Z",
+    "updatedAt": "2025-12-31T00:57:03.974Z",
+    "__v": 0
+  },
+  {
+    "_id": "6945d7c2631ffb1d8567b975",
+    "kupacId": "6945d238631ffb1d8567b941",
+    "imeKampanje": "slep kobra",
+    "imeGoogleNaloga": "slep kobra",
+    "datumPocetka": "2025-12-02T00:00:00.000Z",
+    "datumIsteka": "2026-01-02T00:00:00.000Z",
+    "iznos": 16500,
+    "placeno": true,
+    "nastavci": [
+      {
+        "datum": "2026-01-02T00:00:00.000Z",
+        "iznos": 6000,
+        "placeno": true,
+        "_id": "6965a826af0b6f44e154df37"
+      }
+    ],
+    "createdAt": "2025-12-19T22:54:58.310Z",
+    "updatedAt": "2026-01-13T02:04:22.313Z",
+    "__v": 0
+  },
+  {
+    "_id": "69587ad61b0147734048281e",
+    "kupacId": "69587a8d1b014773404827ed",
+    "imeKampanje": "Tepih servis Andric - manikam",
+    "imeGoogleNaloga": "Tepih servis Andric",
+    "datumPocetka": "2025-12-26T00:00:00.000Z",
+    "datumIsteka": "2026-01-26T00:00:00.000Z",
+    "iznos": 16500,
+    "placeno": true,
+    "nastavci": [],
+    "createdAt": "2026-01-03T02:11:34.749Z",
+    "updatedAt": "2026-01-13T02:04:39.056Z",
+    "__v": 0
+  }
+]

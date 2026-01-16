@@ -1,0 +1,374 @@
+[
+  {
+    "_id": "69421be2b3bfd19359b21c06",
+    "kupacId": "69421ad7b3bfd19359b21bc0",
+    "datumObnavljanja": "2026-03-10T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-17T02:56:34.622Z",
+    "updatedAt": "2025-12-17T02:56:34.622Z",
+    "__v": 0
+  },
+  {
+    "_id": "6943500db3bfd19359b21c59",
+    "kupacId": "69434fcfb3bfd19359b21c4d",
+    "datumObnavljanja": "2026-03-01T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T00:51:25.159Z",
+    "updatedAt": "2025-12-18T00:51:25.159Z",
+    "__v": 0
+  },
+  {
+    "_id": "694351c5b3bfd19359b21c7d",
+    "kupacId": "694351a2b3bfd19359b21c70",
+    "datumObnavljanja": "2026-02-07T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T00:58:45.297Z",
+    "updatedAt": "2025-12-18T00:58:45.297Z",
+    "__v": 0
+  },
+  {
+    "_id": "69435382b3bfd19359b21c97",
+    "kupacId": "69435365b3bfd19359b21c89",
+    "datumObnavljanja": "2026-02-18T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T01:06:10.208Z",
+    "updatedAt": "2025-12-18T01:06:10.208Z",
+    "__v": 0
+  },
+  {
+    "_id": "69435524b3bfd19359b21cb3",
+    "kupacId": "69435481b3bfd19359b21ca4",
+    "datumObnavljanja": "2026-02-19T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T01:13:08.569Z",
+    "updatedAt": "2025-12-18T01:13:08.569Z",
+    "__v": 0
+  },
+  {
+    "_id": "694355d4b3bfd19359b21cd1",
+    "kupacId": "694355b0b3bfd19359b21cc1",
+    "datumObnavljanja": "2026-02-24T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T01:16:04.158Z",
+    "updatedAt": "2025-12-18T01:16:04.158Z",
+    "__v": 0
+  },
+  {
+    "_id": "69435755b3bfd19359b21cf1",
+    "kupacId": "69435735b3bfd19359b21ce0",
+    "datumObnavljanja": "2026-02-27T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T01:22:29.914Z",
+    "updatedAt": "2025-12-18T01:22:29.914Z",
+    "__v": 0
+  },
+  {
+    "_id": "69435863b3bfd19359b21d22",
+    "kupacId": "6943584db3bfd19359b21d10",
+    "datumObnavljanja": "2026-03-20T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T01:26:59.402Z",
+    "updatedAt": "2025-12-18T01:26:59.402Z",
+    "__v": 0
+  },
+  {
+    "_id": "69435925b3bfd19359b21d46",
+    "kupacId": "694358f0b3bfd19359b21d33",
+    "datumObnavljanja": "2026-03-03T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T01:30:13.607Z",
+    "updatedAt": "2025-12-18T01:30:13.607Z",
+    "__v": 0
+  },
+  {
+    "_id": "694359f7b3bfd19359b21d6c",
+    "kupacId": "694359deb3bfd19359b21d58",
+    "datumObnavljanja": "2026-03-17T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T01:33:43.107Z",
+    "updatedAt": "2025-12-18T01:33:43.107Z",
+    "__v": 0
+  },
+  {
+    "_id": "69435a89b3bfd19359b21d94",
+    "kupacId": "69435a62b3bfd19359b21d7f",
+    "datumObnavljanja": "2026-04-01T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T01:36:09.838Z",
+    "updatedAt": "2025-12-18T01:36:09.838Z",
+    "__v": 0
+  },
+  {
+    "_id": "69435bfbb3bfd19359b21dbe",
+    "kupacId": "69435be8b3bfd19359b21da8",
+    "datumObnavljanja": "2026-04-10T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T01:42:19.999Z",
+    "updatedAt": "2025-12-18T01:42:19.999Z",
+    "__v": 0
+  },
+  {
+    "_id": "69435cb2b3bfd19359b21dea",
+    "kupacId": "69435c99b3bfd19359b21dd3",
+    "datumObnavljanja": "2026-04-16T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T01:45:22.655Z",
+    "updatedAt": "2025-12-18T01:45:22.655Z",
+    "__v": 0
+  },
+  {
+    "_id": "69435f59b3bfd19359b21e46",
+    "kupacId": "69435f1fb3bfd19359b21e2d",
+    "datumObnavljanja": "2026-05-14T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T01:56:41.755Z",
+    "updatedAt": "2025-12-18T01:56:41.755Z",
+    "__v": 0
+  },
+  {
+    "_id": "69436043b3bfd19359b21e78",
+    "kupacId": "69435fdeb3bfd19359b21e5e",
+    "datumObnavljanja": "2026-05-26T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T02:00:35.152Z",
+    "updatedAt": "2025-12-18T02:00:35.152Z",
+    "__v": 0
+  },
+  {
+    "_id": "694360edb3bfd19359b21eac",
+    "kupacId": "694360d1b3bfd19359b21e91",
+    "datumObnavljanja": "2026-06-20T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T02:03:25.201Z",
+    "updatedAt": "2025-12-18T02:03:25.201Z",
+    "__v": 0
+  },
+  {
+    "_id": "694361d3b3bfd19359b21ee2",
+    "kupacId": "694361beb3bfd19359b21ec6",
+    "datumObnavljanja": "2026-07-16T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T02:07:15.907Z",
+    "updatedAt": "2025-12-18T02:07:15.907Z",
+    "__v": 0
+  },
+  {
+    "_id": "69436370b3bfd19359b21f1a",
+    "kupacId": "69436265b3bfd19359b21efd",
+    "datumObnavljanja": "2026-07-23T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T02:14:08.422Z",
+    "updatedAt": "2025-12-18T02:14:08.422Z",
+    "__v": 0
+  },
+  {
+    "_id": "69436526b3bfd19359b21f54",
+    "kupacId": "694364feb3bfd19359b21f36",
+    "datumObnavljanja": "2026-08-06T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T02:21:26.544Z",
+    "updatedAt": "2025-12-18T02:21:26.544Z",
+    "__v": 0
+  },
+  {
+    "_id": "694365b2b3bfd19359b21f90",
+    "kupacId": "69436590b3bfd19359b21f71",
+    "datumObnavljanja": "2026-08-18T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T02:23:46.419Z",
+    "updatedAt": "2025-12-18T02:23:46.419Z",
+    "__v": 0
+  },
+  {
+    "_id": "6943666eb3bfd19359b21feb",
+    "kupacId": "69436627b3bfd19359b21fae",
+    "datumObnavljanja": "2026-08-20T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T02:26:54.090Z",
+    "updatedAt": "2025-12-18T02:26:54.090Z",
+    "__v": 0
+  },
+  {
+    "_id": "694366f2b3bfd19359b2202b",
+    "kupacId": "694366ccb3bfd19359b2200a",
+    "datumObnavljanja": "2026-08-28T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T02:29:06.193Z",
+    "updatedAt": "2025-12-18T02:29:06.193Z",
+    "__v": 0
+  },
+  {
+    "_id": "694367f2b3bfd19359b2206d",
+    "kupacId": "694367d3b3bfd19359b2204b",
+    "datumObnavljanja": "2026-09-16T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T02:33:22.733Z",
+    "updatedAt": "2025-12-18T02:33:22.733Z",
+    "__v": 0
+  },
+  {
+    "_id": "694368dab3bfd19359b220b1",
+    "kupacId": "69436866b3bfd19359b2208e",
+    "datumObnavljanja": "2026-09-22T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T02:37:14.424Z",
+    "updatedAt": "2025-12-18T02:37:14.424Z",
+    "__v": 0
+  },
+  {
+    "_id": "69436943b3bfd19359b220f7",
+    "kupacId": "69436928b3bfd19359b220d3",
+    "datumObnavljanja": "2026-09-29T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-18T02:38:59.352Z",
+    "updatedAt": "2025-12-18T02:38:59.352Z",
+    "__v": 0
+  },
+  {
+    "_id": "6944994db3bfd19359b221a4",
+    "kupacId": "6944984ab3bfd19359b2217f",
+    "datumObnavljanja": "2026-10-07T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-19T00:16:13.869Z",
+    "updatedAt": "2025-12-19T00:16:13.869Z",
+    "__v": 0
+  },
+  {
+    "_id": "694499c8b3bfd19359b221ee",
+    "kupacId": "694499afb3bfd19359b221c8",
+    "datumObnavljanja": "2026-10-09T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-19T00:18:16.501Z",
+    "updatedAt": "2025-12-19T00:18:16.501Z",
+    "__v": 0
+  },
+  {
+    "_id": "69449a60b3bfd19359b2223a",
+    "kupacId": "69449a41b3bfd19359b22213",
+    "datumObnavljanja": "2026-10-13T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-19T00:20:48.586Z",
+    "updatedAt": "2025-12-19T00:20:48.586Z",
+    "__v": 0
+  },
+  {
+    "_id": "69449bf3b3bfd19359b22288",
+    "kupacId": "69449bd6b3bfd19359b22260",
+    "datumObnavljanja": "2026-11-07T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-19T00:27:31.390Z",
+    "updatedAt": "2025-12-19T00:27:31.390Z",
+    "__v": 0
+  },
+  {
+    "_id": "69449d59b3bfd19359b222d8",
+    "kupacId": "69449d1bb3bfd19359b222af",
+    "datumObnavljanja": "2026-11-14T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-19T00:33:29.284Z",
+    "updatedAt": "2025-12-19T00:33:29.284Z",
+    "__v": 0
+  },
+  {
+    "_id": "69449e4ab3bfd19359b2232a",
+    "kupacId": "69449e0db3bfd19359b22300",
+    "datumObnavljanja": "2026-11-28T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-19T00:37:30.224Z",
+    "updatedAt": "2025-12-19T00:37:30.224Z",
+    "__v": 0
+  },
+  {
+    "_id": "69449ebfb3bfd19359b2237e",
+    "kupacId": "69449e8db3bfd19359b22353",
+    "datumObnavljanja": "2026-12-12T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-19T00:39:27.314Z",
+    "updatedAt": "2025-12-19T00:39:27.314Z",
+    "__v": 0
+  },
+  {
+    "_id": "69449f9ab3bfd19359b223d4",
+    "kupacId": "69449f79b3bfd19359b223a8",
+    "datumObnavljanja": "2026-12-10T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-19T00:43:06.422Z",
+    "updatedAt": "2025-12-19T00:43:06.422Z",
+    "__v": 0
+  },
+  {
+    "_id": "6944a098b3bfd19359b2247e",
+    "kupacId": "6944a035b3bfd19359b22451",
+    "datumObnavljanja": "2026-12-04T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-19T00:47:20.323Z",
+    "updatedAt": "2025-12-19T00:47:20.323Z",
+    "__v": 0
+  },
+  {
+    "_id": "6944a1aab3bfd19359b224d8",
+    "kupacId": "6944a11bb3bfd19359b224aa",
+    "datumObnavljanja": "2026-12-09T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-19T00:51:54.083Z",
+    "updatedAt": "2025-12-19T00:51:54.083Z",
+    "__v": 0
+  },
+  {
+    "_id": "6944a26eb3bfd19359b22534",
+    "kupacId": "6944a24bb3bfd19359b22505",
+    "datumObnavljanja": "2026-12-09T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-19T00:55:10.859Z",
+    "updatedAt": "2025-12-19T00:55:10.859Z",
+    "__v": 0
+  },
+  {
+    "_id": "6945046d90b0e1a625f0188c",
+    "kupacId": "6942191c0a3ef452260c7d45",
+    "datumObnavljanja": "2026-02-04T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-19T07:53:17.121Z",
+    "updatedAt": "2025-12-19T07:53:17.121Z",
+    "__v": 0
+  },
+  {
+    "_id": "694505c790b0e1a625f0199a",
+    "kupacId": "694219d90a3ef452260c7d56",
+    "datumObnavljanja": "2026-02-04T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2025-12-19T07:59:03.038Z",
+    "updatedAt": "2025-12-19T07:59:03.038Z",
+    "__v": 0
+  },
+  {
+    "_id": "6955d5bf89f9b647fc45017e",
+    "kupacId": "6955cfcf89f9b647fc44ffcb",
+    "datumPocetka": "2025-12-30T00:00:00.000Z",
+    "datumObnavljanja": "2026-12-30T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2026-01-01T02:02:39.083Z",
+    "updatedAt": "2026-01-01T02:02:39.083Z",
+    "__v": 0
+  },
+  {
+    "_id": "6955d5de89f9b647fc4501b5",
+    "kupacId": "6955d49389f9b647fc4500c9",
+    "datumPocetka": "2025-12-30T00:00:00.000Z",
+    "datumObnavljanja": "2026-12-30T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2026-01-01T02:03:10.794Z",
+    "updatedAt": "2026-01-01T02:03:10.794Z",
+    "__v": 0
+  },
+  {
+    "_id": "6955d92989f9b647fc4502a3",
+    "kupacId": "6955d6fa89f9b647fc4501eb",
+    "datumPocetka": "2025-12-29T00:00:00.000Z",
+    "datumObnavljanja": "2026-12-29T00:00:00.000Z",
+    "podsetnikPoslat": false,
+    "createdAt": "2026-01-01T02:17:13.877Z",
+    "updatedAt": "2026-01-01T02:17:13.877Z",
+    "__v": 0
+  }
+]

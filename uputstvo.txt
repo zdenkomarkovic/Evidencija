@@ -1,0 +1,5 @@
+na Image postavi  unoptimized
+npm run images:optimize
+
+npm install sanity @sanity/vision next-sanity
+1

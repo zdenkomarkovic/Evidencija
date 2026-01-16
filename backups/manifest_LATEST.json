@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-01-16T18-26-43",
+  "date": "2026-01-16T18:26:43.433Z",
+  "collections": {
+    "kupci": {
+      "count": 45,
+      "file": "kupci_2026-01-16T18-26-43.json"
+    },
+    "rate": {
+      "count": 77,
+      "file": "rate_2026-01-16T18-26-43.json"
+    },
+    "hosting": {
+      "count": 41,
+      "file": "hosting_2026-01-16T18-26-43.json"
+    },
+    "googleAds": {
+      "count": 5,
+      "file": "google_ads_2026-01-16T18-26-43.json"
+    }
+  },
+  "totalRecords": 168
+}
