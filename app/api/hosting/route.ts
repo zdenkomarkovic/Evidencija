@@ -7,10 +7,12 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const kupacId = searchParams.get("kupacId");
 
-    const filters: { kupac_id?: string } = {};
+    const filters: { kupac_id?: string; includeArhivirani?: boolean } = {};
 
     if (kupacId) {
       filters.kupac_id = kupacId;
+      // Kada tražimo podatke za specifičnog kupca, uključi sve bez obzira da li je arhiviran
+      filters.includeArhivirani = true;
     }
 
     const hosting = await getHosting(filters);

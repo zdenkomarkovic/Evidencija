@@ -501,7 +501,7 @@ export interface GoogleAds {
   kupacId?: Kupac | null; // Za populate
 }
 
-export async function getGoogleAds(filters?: { kupac_id?: string }) {
+export async function getGoogleAds(filters?: { kupac_id?: string; includeArhivirani?: boolean }) {
   let query = supabase
     .from("google_ads")
     .select(
@@ -522,7 +522,7 @@ export async function getGoogleAds(filters?: { kupac_id?: string }) {
   if (error) throw error;
 
   // Mapiranje za kompatibilnost sa frontend-om (snake_case -> camelCase, id -> _id)
-  return data.map((ads) => ({
+  let mapped = data.map((ads) => ({
     _id: ads.id,
     kupacId: ads.kupci
       ? {
@@ -535,6 +535,7 @@ export async function getGoogleAds(filters?: { kupac_id?: string }) {
           firma: ads.kupci.firma,
           nacinPlacanja: ads.kupci.nacin_placanja,
           domen: ads.kupci.domen,
+          arhiviran: ads.kupci.arhiviran,
         }
       : null,
     imeKampanje: ads.ime_kampanje,
@@ -551,6 +552,62 @@ export async function getGoogleAds(filters?: { kupac_id?: string }) {
         }))
       : [],
   }));
+
+  // Podrazumevano filtriramo Google Ads arhiviranih kupaca
+  if (!filters?.includeArhivirani) {
+    mapped = mapped.filter((ads) => !ads.kupacId?.arhiviran);
+  }
+
+  return mapped;
+}
+
+export async function getArhiviraniGoogleAds() {
+  const query = supabase
+    .from("google_ads")
+    .select(
+      `
+      *,
+      kupci (*),
+      google_ads_nastavci (*)
+    `
+    )
+    .eq("kupci.arhiviran", true)
+    .order("datum_isteka", { ascending: true });
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+
+  return data.map((ads) => ({
+    _id: ads.id,
+    kupacId: ads.kupci
+      ? {
+          _id: ads.kupci.id,
+          ime: ads.kupci.ime,
+          email: ads.kupci.email,
+          email2: ads.kupci.email2,
+          telefon: ads.kupci.telefon,
+          telefon2: ads.kupci.telefon2,
+          firma: ads.kupci.firma,
+          nacinPlacanja: ads.kupci.nacin_placanja,
+          domen: ads.kupci.domen,
+          arhiviran: ads.kupci.arhiviran,
+        }
+      : null,
+    imeKampanje: ads.ime_kampanje,
+    imeGoogleNaloga: ads.ime_google_naloga,
+    datumPocetka: ads.datum_pocetka,
+    datumIsteka: ads.datum_isteka,
+    iznos: ads.iznos,
+    placeno: ads.placeno,
+    nastavci: ads.google_ads_nastavci
+      ? ads.google_ads_nastavci.map((n: GoogleAdsNastavak) => ({
+          datum: n.datum,
+          iznos: n.iznos,
+          placeno: n.placeno,
+        }))
+      : [],
+  })).filter((ads) => ads.kupacId?.arhiviran);
 }
 
 export async function getGoogleAdsById(id: string) {

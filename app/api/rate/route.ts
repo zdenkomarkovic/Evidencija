@@ -8,10 +8,12 @@ export async function GET(request: NextRequest) {
     const kupacId = searchParams.get("kupacId");
     const placeno = searchParams.get("placeno");
 
-    const filters: { kupac_id?: string; placeno?: boolean } = {};
+    const filters: { kupac_id?: string; placeno?: boolean; includeArhivirani?: boolean } = {};
 
     if (kupacId) {
       filters.kupac_id = kupacId;
+      // Kada tražimo podatke za specifičnog kupca, uključi sve bez obzira da li je arhiviran
+      filters.includeArhivirani = true;
     }
 
     if (placeno !== null && placeno !== undefined && placeno !== "") {

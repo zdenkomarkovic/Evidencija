@@ -27,6 +27,7 @@ interface Kupac {
   firma?: string;
   nacinPlacanja?: "fiskalni" | "faktura";
   domen?: string;
+  arhiviran?: boolean;
   brojRata: number;
   brojNeplacenihRata: number;
   ukupanDug: number;
@@ -84,8 +85,11 @@ export default function AdminPage() {
   const [kupci, setKupci] = useState<Kupac[]>([]);
   const [arhiviraniKupci, setArhiviraniKupci] = useState<Kupac[]>([]);
   const [rate, setRate] = useState<Rata[]>([]);
+  const [arhiviraneRate, setArhiviraneRate] = useState<Rata[]>([]);
   const [hosting, setHosting] = useState<Hosting[]>([]);
+  const [arhiviraniHosting, setArhiviraniHosting] = useState<Hosting[]>([]);
   const [kampanje, setKampanje] = useState<GoogleAds[]>([]);
+  const [arhiviraneKampanje, setArhiviraneKampanje] = useState<GoogleAds[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
     "kupci" | "rate" | "hosting" | "googleads" | "arhivirani"
@@ -169,12 +173,28 @@ export default function AdminPage() {
 
   const ucitajArhiviraneKupce = async () => {
     try {
-      const res = await fetch("/api/kupci/arhivirani");
-      const data = await res.json();
-      setArhiviraniKupci(Array.isArray(data) ? data : []);
+      const [kupciRes, rateRes, hostingRes, kampanjeRes] = await Promise.all([
+        fetch("/api/kupci/arhivirani"),
+        fetch("/api/rate/arhivirani"),
+        fetch("/api/hosting/arhivirani"),
+        fetch("/api/google-ads/arhivirani"),
+      ]);
+
+      const kupciData = await kupciRes.json();
+      const rateData = await rateRes.json();
+      const hostingData = await hostingRes.json();
+      const kampanjeData = await kampanjeRes.json();
+
+      setArhiviraniKupci(Array.isArray(kupciData) ? kupciData : []);
+      setArhiviraneRate(Array.isArray(rateData) ? rateData : []);
+      setArhiviraniHosting(Array.isArray(hostingData) ? hostingData : []);
+      setArhiviraneKampanje(Array.isArray(kampanjeData) ? kampanjeData : []);
     } catch (error) {
-      console.error("Greška pri učitavanju arhiviranih kupaca:", error);
+      console.error("Greška pri učitavanju arhiviranih podataka:", error);
       setArhiviraniKupci([]);
+      setArhiviraneRate([]);
+      setArhiviraniHosting([]);
+      setArhiviraneKampanje([]);
     }
   };
 
@@ -301,7 +321,11 @@ export default function AdminPage() {
   };
 
   const handleKupacKlik = (kupacId: string) => {
-    const kupac = kupci.find((k) => k._id === kupacId);
+    // Traži kupca i u normalnim i u arhiviranim kupcima
+    let kupac = kupci.find((k) => k._id === kupacId);
+    if (!kupac) {
+      kupac = arhiviraniKupci.find((k) => k._id === kupacId);
+    }
     if (kupac) {
       setIzabraniKupacZaDetalje(kupac);
       setKupacDetaljiModalOpen(true);
@@ -651,19 +675,70 @@ export default function AdminPage() {
             <div className="space-y-6">
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <h3 className="text-lg font-semibold text-red-800 mb-2">
-                  📦 Arhivirani klijenti
+                  📦 Arhivirani klijenti i njihova evidencija
                 </h3>
                 <p className="text-sm text-red-700">
                   Ovo su klijenti koji ne plaćaju ili su na drugom načinu označeni za arhiviranje.
-                  Njihova evidencija se čuva ali ne pojavljuje u normalnom pregledu.
+                  Njihova evidencija (kupci, rate, hosting, Google Ads) se čuva ali ne pojavljuje u normalnom pregledu.
                 </p>
               </div>
-              <KupciTabela
-                kupci={arhiviraniKupci}
-                onKupacKlik={handleKupacKlik}
-                onEdit={handleEditKupac}
-                onDelete={handleDeleteKupac}
-              />
+
+              {/* Arhivirani kupci */}
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                  Kupci ({arhiviraniKupci.length})
+                </h3>
+                <KupciTabela
+                  kupci={arhiviraniKupci}
+                  onKupacKlik={handleKupacKlik}
+                  onEdit={handleEditKupac}
+                  onDelete={handleDeleteKupac}
+                />
+              </div>
+
+              {/* Arhivirane rate */}
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                  Rate ({arhiviraneRate.length})
+                </h3>
+                <RateTabela
+                  rate={arhiviraneRate}
+                  onOznaciPlaceno={oznaciPlaceno}
+                  onResetujPodsetnik={resetujPodsetnikRata}
+                  onEdit={handleEditRata}
+                  onDelete={handleDeleteRata}
+                  onKupacKlik={handleKupacKlik}
+                />
+              </div>
+
+              {/* Arhivirani hosting */}
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                  Hosting ({arhiviraniHosting.length})
+                </h3>
+                <HostingTabela
+                  hosting={arhiviraniHosting}
+                  onResetujPodsetnik={resetujPodsetnikHosting}
+                  onEdit={handleEditHosting}
+                  onDelete={handleDeleteHosting}
+                  onKupacKlik={handleKupacKlik}
+                />
+              </div>
+
+              {/* Arhivirane Google Ads kampanje */}
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                  Google Ads ({arhiviraneKampanje.length})
+                </h3>
+                <GoogleAdsTabela
+                  kampanje={arhiviraneKampanje}
+                  onEdit={handleEditGoogleAds}
+                  onDelete={handleDeleteGoogleAds}
+                  onOznaciPlacenoOsnovni={oznaciPlacenoOsnovniGoogleAds}
+                  onOznaciPlacenoNastavak={oznaciPlacenoNastavakGoogleAds}
+                  onKupacKlik={handleKupacKlik}
+                />
+              </div>
             </div>
           )}
         </div>
