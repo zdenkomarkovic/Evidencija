@@ -1,9 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getArhiviraniKupci, getRate } from '@/lib/supabase-helpers';
 
 // GET - Dohvati sve arhivirane kupce sa informacijama o ratama
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const searchParams = request.nextUrl.searchParams;
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '25');
+    const search = searchParams.get('search') || '';
+
     const kupci = await getArhiviraniKupci();
 
     // Za svakog arhiviranog kupca dohvati informacije o ratama
@@ -22,7 +27,34 @@ export async function GET() {
       })
     );
 
-    return NextResponse.json(kupciSaRatama);
+    // Filtriraj kupce prema pretrazi
+    let filteredKupci = kupciSaRatama;
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filteredKupci = kupciSaRatama.filter(
+        (kupac) =>
+          (kupac as any).ime?.toLowerCase().includes(searchLower) ||
+          (kupac as any).email?.toLowerCase().includes(searchLower) ||
+          (kupac as any).telefon?.includes(search) ||
+          (kupac as any).firma?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Paginacija
+    const total = filteredKupci.length;
+    const totalPages = Math.ceil(total / limit);
+    const offset = (page - 1) * limit;
+    const paginatedKupci = filteredKupci.slice(offset, offset + limit);
+
+    return NextResponse.json({
+      data: paginatedKupci,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
+    });
   } catch (error) {
     console.error('Greška pri dohvatanju arhiviranih kupaca:', error);
     return NextResponse.json(

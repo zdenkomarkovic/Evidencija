@@ -133,55 +133,59 @@ export default function HostingTabela({
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Hosting</h2>
-        <input
-          type="text"
-          placeholder="Pretraži po kupcu..."
-          value={pretraga}
-          onChange={(e) => setPretraga(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
+      <div className="mb-6">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+          <h2 className="text-2xl font-bold text-gray-800">Hosting</h2>
+          <input
+            type="text"
+            placeholder="Pretraži po kupcu..."
+            value={pretraga}
+            onChange={(e) => setPretraga(e.target.value)}
+            className="w-full lg:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
       </div>
 
       {/* Navigacija po mesecima */}
       {dostupniMeseci.length > 0 && (
-        <div className="mb-6 flex items-center justify-between bg-gray-50 p-4 rounded-lg">
-          <button
-            onClick={idiNaPrethodnMesec}
-            disabled={dostupniMeseci.indexOf(izabraniMesec) === 0}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-          >
-            ← Prethodni mesec
-          </button>
-
-          <div className="flex items-center gap-4">
-            <span className="text-lg font-semibold text-gray-700">
-              {izabraniMesec && formatMesec(izabraniMesec)}
-            </span>
-            <select
-              value={izabraniMesec}
-              onChange={(e) => setIzabraniMesec(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+        <div className="mb-6 bg-gray-50 p-4 rounded-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <button
+              onClick={idiNaPrethodnMesec}
+              disabled={dostupniMeseci.indexOf(izabraniMesec) === 0}
+              className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
             >
-              {dostupniMeseci.map((mesec) => (
-                <option key={mesec} value={mesec}>
-                  {formatMesec(mesec)}
-                </option>
-              ))}
-            </select>
-            <span className="text-sm text-gray-500">
-              ({filtriraniHosting.length} {filtriraniHosting.length === 1 ? 'zapis' : 'zapisa'})
-            </span>
-          </div>
+              ← Prethodni mesec
+            </button>
 
-          <button
-            onClick={idiNaSledeciMesec}
-            disabled={dostupniMeseci.indexOf(izabraniMesec) === dostupniMeseci.length - 1}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-          >
-            Sledeći mesec →
-          </button>
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+              <span className="text-base sm:text-lg font-semibold text-gray-700">
+                {izabraniMesec && formatMesec(izabraniMesec)}
+              </span>
+              <select
+                value={izabraniMesec}
+                onChange={(e) => setIzabraniMesec(e.target.value)}
+                className="w-full sm:w-auto px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-sm sm:text-base"
+              >
+                {dostupniMeseci.map((mesec) => (
+                  <option key={mesec} value={mesec}>
+                    {formatMesec(mesec)}
+                  </option>
+                ))}
+              </select>
+              <span className="text-xs sm:text-sm text-gray-500">
+                ({filtriraniHosting.length} {filtriraniHosting.length === 1 ? 'zapis' : 'zapisa'})
+              </span>
+            </div>
+
+            <button
+              onClick={idiNaSledeciMesec}
+              disabled={dostupniMeseci.indexOf(izabraniMesec) === dostupniMeseci.length - 1}
+              className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
+            >
+              Sledeći mesec →
+            </button>
+          </div>
         </div>
       )}
 

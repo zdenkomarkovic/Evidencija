@@ -95,6 +95,20 @@ export default function AdminPage() {
     "kupci" | "rate" | "hosting" | "googleads" | "arhivirani"
   >("kupci");
 
+  // Paginacija za kupce
+  const [kupciPage, setKupciPage] = useState(1);
+  const [kupciLimit, setKupciLimit] = useState(25);
+  const [kupciTotal, setKupciTotal] = useState(0);
+  const [kupciTotalPages, setKupciTotalPages] = useState(0);
+  const [kupciSearch, setKupciSearch] = useState("");
+
+  // Paginacija za arhivirane kupce
+  const [arhiviraniKupciPage, setArhiviraniKupciPage] = useState(1);
+  const [arhiviraniKupciLimit, setArhiviraniKupciLimit] = useState(25);
+  const [arhiviraniKupciTotal, setArhiviraniKupciTotal] = useState(0);
+  const [arhiviraniKupciTotalPages, setArhiviraniKupciTotalPages] = useState(0);
+  const [arhiviraniKupciSearch, setArhiviraniKupciSearch] = useState("");
+
   // Modali za dodavanje
   const [kupcaModalOpen, setKupcaModalOpen] = useState(false);
   const [ratuModalOpen, setRatuModalOpen] = useState(false);
@@ -136,14 +150,18 @@ export default function AdminPage() {
 
   useEffect(() => {
     ucitajPodatke();
+  }, [kupciPage, kupciLimit, kupciSearch]);
+
+  useEffect(() => {
     ucitajArhiviraneKupce();
-  }, []);
+  }, [arhiviraniKupciPage, arhiviraniKupciLimit, arhiviraniKupciSearch]);
 
   const ucitajPodatke = async () => {
     setLoading(true);
     try {
+      const kupciUrl = `/api/kupci?page=${kupciPage}&limit=${kupciLimit}&search=${encodeURIComponent(kupciSearch)}`;
       const [kupciRes, rateRes, hostingRes, kampanjeRes] = await Promise.all([
-        fetch("/api/kupci"),
+        fetch(kupciUrl),
         fetch("/api/rate"),
         fetch("/api/hosting"),
         fetch("/api/google-ads"),
@@ -154,8 +172,16 @@ export default function AdminPage() {
       const hostingData = await hostingRes.json();
       const kampanjeData = await kampanjeRes.json();
 
-      // Proveri da su podaci nizovi pre postavljanja u state
-      setKupci(Array.isArray(kupciData) ? kupciData : []);
+      // Proveri da li kupciData ima paginaciju
+      if (kupciData.data && kupciData.pagination) {
+        setKupci(Array.isArray(kupciData.data) ? kupciData.data : []);
+        setKupciTotal(kupciData.pagination.total);
+        setKupciTotalPages(kupciData.pagination.totalPages);
+      } else {
+        // Fallback za stari format
+        setKupci(Array.isArray(kupciData) ? kupciData : []);
+      }
+
       setRate(Array.isArray(rateData) ? rateData : []);
       setHosting(Array.isArray(hostingData) ? hostingData : []);
       setKampanje(Array.isArray(kampanjeData) ? kampanjeData : []);
@@ -173,8 +199,9 @@ export default function AdminPage() {
 
   const ucitajArhiviraneKupce = async () => {
     try {
+      const arhiviraniKupciUrl = `/api/kupci/arhivirani?page=${arhiviraniKupciPage}&limit=${arhiviraniKupciLimit}&search=${encodeURIComponent(arhiviraniKupciSearch)}`;
       const [kupciRes, rateRes, hostingRes, kampanjeRes] = await Promise.all([
-        fetch("/api/kupci/arhivirani"),
+        fetch(arhiviraniKupciUrl),
         fetch("/api/rate/arhivirani"),
         fetch("/api/hosting/arhivirani"),
         fetch("/api/google-ads/arhivirani"),
@@ -185,7 +212,16 @@ export default function AdminPage() {
       const hostingData = await hostingRes.json();
       const kampanjeData = await kampanjeRes.json();
 
-      setArhiviraniKupci(Array.isArray(kupciData) ? kupciData : []);
+      // Proveri da li kupciData ima paginaciju
+      if (kupciData.data && kupciData.pagination) {
+        setArhiviraniKupci(Array.isArray(kupciData.data) ? kupciData.data : []);
+        setArhiviraniKupciTotal(kupciData.pagination.total);
+        setArhiviraniKupciTotalPages(kupciData.pagination.totalPages);
+      } else {
+        // Fallback za stari format
+        setArhiviraniKupci(Array.isArray(kupciData) ? kupciData : []);
+      }
+
       setArhiviraneRate(Array.isArray(rateData) ? rateData : []);
       setArhiviraniHosting(Array.isArray(hostingData) ? hostingData : []);
       setArhiviraneKampanje(Array.isArray(kampanjeData) ? kampanjeData : []);
@@ -473,61 +509,61 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8 flex justify-between items-center">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">
               Admin Panel
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               Upravljanje klijentima, ratama i hostingom
             </p>
           </div>
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+            className="w-full sm:w-auto px-4 sm:px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm sm:text-base"
           >
             Odjavi se
           </button>
         </div>
 
         {/* Statistika */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+            <h3 className="text-sm sm:text-lg font-semibold text-gray-700 mb-2">
               Ukupno klijenata
             </h3>
-            <p className="text-3xl font-bold text-indigo-600">
-              {kupci?.length || 0}
+            <p className="text-2xl sm:text-3xl font-bold text-indigo-600">
+              {kupciTotal || 0}
             </p>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+            <h3 className="text-sm sm:text-lg font-semibold text-gray-700 mb-2">
               Neplaćene rate
             </h3>
-            <p className="text-3xl font-bold text-red-600">
+            <p className="text-2xl sm:text-3xl font-bold text-red-600">
               {rate?.filter((r) => !r.placeno)?.length || 0}
             </p>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+            <h3 className="text-sm sm:text-lg font-semibold text-gray-700 mb-2">
               Ukupan dug
             </h3>
-            <p className="text-3xl font-bold text-red-600">
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-red-600">
               {(
                 rate
                   ?.filter((r) => !r.placeno)
                   ?.reduce((sum, r) => sum + r.iznos, 0) || 0
               ).toLocaleString("sr-RS")}{" "}
-              RSD
+              <span className="text-base sm:text-lg">RSD</span>
             </p>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+            <h3 className="text-sm sm:text-lg font-semibold text-gray-700 mb-2">
               Aktivne kampanje
             </h3>
-            <p className="text-3xl font-bold text-green-600">
+            <p className="text-2xl sm:text-3xl font-bold text-green-600">
               {kampanje?.length || 0}
             </p>
           </div>
@@ -535,100 +571,99 @@ export default function AdminPage() {
 
         {/* Tabovi i Dugmad */}
         <div className="mb-6">
-          <div className="border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <nav className="-mb-px flex space-x-8">
-                <button
-                  onClick={() => setActiveTab("kupci")}
-                  className={`${
-                    activeTab === "kupci"
-                      ? "border-indigo-500 text-indigo-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
-                >
-                  Klijenti ({kupci?.length || 0})
-                </button>
-                <button
-                  onClick={() => setActiveTab("rate")}
-                  className={`${
-                    activeTab === "rate"
-                      ? "border-indigo-500 text-indigo-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
-                >
-                  Rate ({rate?.length || 0})
-                </button>
-                <button
-                  onClick={() => setActiveTab("hosting")}
-                  className={`${
-                    activeTab === "hosting"
-                      ? "border-indigo-500 text-indigo-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
-                >
-                  Hosting ({hosting?.length || 0})
-                </button>
-                <button
-                  onClick={() => setActiveTab("googleads")}
-                  className={`${
-                    activeTab === "googleads"
-                      ? "border-indigo-500 text-indigo-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
-                >
-                  Google Ads ({kampanje?.length || 0})
-                </button>
-                <button
-                  onClick={() => setActiveTab("arhivirani")}
-                  className={`${
-                    activeTab === "arhivirani"
-                      ? "border-red-500 text-red-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
-                >
-                  🗄️ Arhivirani ({arhiviraniKupci?.length || 0})
-                </button>
-              </nav>
+          {/* Dugmad za dodavanje - iznad tabova */}
+          <div className="mb-4 flex justify-end">
+            {activeTab === "kupci" && (
+              <button
+                onClick={() => setKupcaModalOpen(true)}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm sm:text-base"
+              >
+                + Dodaj Klijenta
+              </button>
+            )}
+            {activeTab === "rate" && (
+              <button
+                onClick={() => setRatuModalOpen(true)}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm sm:text-base"
+                disabled={kupci.length === 0}
+              >
+                + Dodaj Ratu
+              </button>
+            )}
+            {activeTab === "hosting" && (
+              <button
+                onClick={() => setHostingModalOpen(true)}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm sm:text-base"
+                disabled={kupci.length === 0}
+              >
+                + Dodaj Hosting
+              </button>
+            )}
+            {activeTab === "googleads" && (
+              <button
+                onClick={() => setGoogleAdsModalOpen(true)}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm sm:text-base"
+                disabled={kupci.length === 0}
+              >
+                + Dodaj Google Ads Kampanju
+              </button>
+            )}
+          </div>
 
-              {/* Dugmad za dodavanje */}
-              <div className="mb-4">
-                {activeTab === "kupci" && (
-                  <button
-                    onClick={() => setKupcaModalOpen(true)}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                  >
-                    + Dodaj Klijenta
-                  </button>
-                )}
-                {activeTab === "rate" && (
-                  <button
-                    onClick={() => setRatuModalOpen(true)}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                    disabled={kupci.length === 0}
-                  >
-                    + Dodaj Ratu
-                  </button>
-                )}
-                {activeTab === "hosting" && (
-                  <button
-                    onClick={() => setHostingModalOpen(true)}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                    disabled={kupci.length === 0}
-                  >
-                    + Dodaj Hosting
-                  </button>
-                )}
-                {activeTab === "googleads" && (
-                  <button
-                    onClick={() => setGoogleAdsModalOpen(true)}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                    disabled={kupci.length === 0}
-                  >
-                    + Dodaj Google Ads Kampanju
-                  </button>
-                )}
-              </div>
-            </div>
+          {/* Tabovi sa horizontal scroll */}
+          <div className="border-b border-gray-200 overflow-x-auto">
+            <nav className="-mb-px flex space-x-4 sm:space-x-8 min-w-max">
+              <button
+                onClick={() => setActiveTab("kupci")}
+                className={`${
+                  activeTab === "kupci"
+                    ? "border-indigo-500 text-indigo-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+              >
+                Klijenti ({kupciTotal || 0})
+              </button>
+              <button
+                onClick={() => setActiveTab("rate")}
+                className={`${
+                  activeTab === "rate"
+                    ? "border-indigo-500 text-indigo-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+              >
+                Rate ({rate?.length || 0})
+              </button>
+              <button
+                onClick={() => setActiveTab("hosting")}
+                className={`${
+                  activeTab === "hosting"
+                    ? "border-indigo-500 text-indigo-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+              >
+                Hosting ({hosting?.length || 0})
+              </button>
+              <button
+                onClick={() => setActiveTab("googleads")}
+                className={`${
+                  activeTab === "googleads"
+                    ? "border-indigo-500 text-indigo-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+              >
+                Google Ads ({kampanje?.length || 0})
+              </button>
+              <button
+                onClick={() => setActiveTab("arhivirani")}
+                className={`${
+                  activeTab === "arhivirani"
+                    ? "border-red-500 text-red-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+              >
+                🗄️ Arhivirani ({arhiviraniKupciTotal || 0})
+              </button>
+            </nav>
           </div>
         </div>
 
@@ -640,6 +675,19 @@ export default function AdminPage() {
               onKupacKlik={handleKupacKlik}
               onEdit={handleEditKupac}
               onDelete={handleDeleteKupac}
+              currentPage={kupciPage}
+              totalPages={kupciTotalPages}
+              totalItems={kupciTotal}
+              itemsPerPage={kupciLimit}
+              onPageChange={(page) => setKupciPage(page)}
+              onItemsPerPageChange={(limit) => {
+                setKupciLimit(limit);
+                setKupciPage(1); // Reset na prvu stranicu
+              }}
+              onSearchChange={(search) => {
+                setKupciSearch(search);
+                setKupciPage(1); // Reset na prvu stranicu
+              }}
             />
           )}
           {activeTab === "rate" && (
@@ -686,13 +734,26 @@ export default function AdminPage() {
               {/* Arhivirani kupci */}
               <div>
                 <h3 className="text-xl font-bold text-gray-800 mb-3">
-                  Kupci ({arhiviraniKupci.length})
+                  Kupci ({arhiviraniKupciTotal})
                 </h3>
                 <KupciTabela
                   kupci={arhiviraniKupci}
                   onKupacKlik={handleKupacKlik}
                   onEdit={handleEditKupac}
                   onDelete={handleDeleteKupac}
+                  currentPage={arhiviraniKupciPage}
+                  totalPages={arhiviraniKupciTotalPages}
+                  totalItems={arhiviraniKupciTotal}
+                  itemsPerPage={arhiviraniKupciLimit}
+                  onPageChange={(page) => setArhiviraniKupciPage(page)}
+                  onItemsPerPageChange={(limit) => {
+                    setArhiviraniKupciLimit(limit);
+                    setArhiviraniKupciPage(1); // Reset na prvu stranicu
+                  }}
+                  onSearchChange={(search) => {
+                    setArhiviraniKupciSearch(search);
+                    setArhiviraniKupciPage(1); // Reset na prvu stranicu
+                  }}
                 />
               </div>
 

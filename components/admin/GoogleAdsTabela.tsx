@@ -80,15 +80,17 @@ export default function GoogleAdsTabela({
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Google Ads Kampanje</h2>
-        <input
-          type="text"
-          placeholder="Pretraži kampanje..."
-          value={pretraga}
-          onChange={(e) => setPretraga(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
+      <div className="mb-6">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+          <h2 className="text-2xl font-bold text-gray-800">Google Ads Kampanje</h2>
+          <input
+            type="text"
+            placeholder="Pretraži kampanje..."
+            value={pretraga}
+            onChange={(e) => setPretraga(e.target.value)}
+            className="w-full lg:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
       </div>
 
       <div className="overflow-x-auto">

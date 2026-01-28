@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface Kupac {
   _id: string;
@@ -22,6 +22,13 @@ interface KupciTabelaProps {
   onKupacKlik: (kupacId: string) => void;
   onEdit: (kupac: Kupac) => void;
   onDelete: (kupacId: string) => void;
+  currentPage?: number;
+  totalPages?: number;
+  totalItems?: number;
+  itemsPerPage?: number;
+  onPageChange?: (page: number) => void;
+  onItemsPerPageChange?: (itemsPerPage: number) => void;
+  onSearchChange?: (search: string) => void;
 }
 
 export default function KupciTabela({
@@ -29,27 +36,145 @@ export default function KupciTabela({
   onKupacKlik,
   onEdit,
   onDelete,
+  currentPage = 1,
+  totalPages = 1,
+  totalItems = 0,
+  itemsPerPage = 25,
+  onPageChange,
+  onItemsPerPageChange,
+  onSearchChange,
 }: KupciTabelaProps) {
   const [pretraga, setPretraga] = useState("");
+  const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const filtrianiKupci = kupci.filter(
-    (kupac) =>
-      kupac.ime.toLowerCase().includes(pretraga.toLowerCase()) ||
-      kupac.email.toLowerCase().includes(pretraga.toLowerCase()) ||
-      kupac.telefon.includes(pretraga)
-  );
+  const handleSearchChange = (value: string) => {
+    setPretraga(value);
+
+    // Debounce search
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current);
+    }
+
+    searchTimeout.current = setTimeout(() => {
+      if (onSearchChange) {
+        onSearchChange(value);
+      }
+    }, 500);
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeout.current) {
+        clearTimeout(searchTimeout.current);
+      }
+    };
+  }, []);
+
+  const renderPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // First page
+    if (startPage > 1) {
+      pages.push(
+        <button
+          key={1}
+          onClick={() => onPageChange && onPageChange(1)}
+          className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50"
+        >
+          1
+        </button>
+      );
+      if (startPage > 2) {
+        pages.push(
+          <span key="ellipsis-start" className="px-2 text-gray-500">
+            ...
+          </span>
+        );
+      }
+    }
+
+    // Page numbers
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => onPageChange && onPageChange(i)}
+          className={`px-3 py-1 border rounded ${
+            i === currentPage
+              ? "bg-indigo-600 text-white border-indigo-600"
+              : "border-gray-300 hover:bg-gray-50"
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    // Last page
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        pages.push(
+          <span key="ellipsis-end" className="px-2 text-gray-500">
+            ...
+          </span>
+        );
+      }
+      pages.push(
+        <button
+          key={totalPages}
+          onClick={() => onPageChange && onPageChange(totalPages)}
+          className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50"
+        >
+          {totalPages}
+        </button>
+      );
+    }
+
+    return pages;
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Klijenti</h2>
-        <input
-          type="text"
-          placeholder="Pretraži klijente..."
-          value={pretraga}
-          onChange={(e) => setPretraga(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
+      <div className="mb-6">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+          <h2 className="text-2xl font-bold text-gray-800">Klijenti</h2>
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+            <div className="flex items-center gap-2">
+              <label htmlFor="itemsPerPage" className="text-sm text-gray-600 whitespace-nowrap">
+                Prikaži:
+              </label>
+              <select
+                id="itemsPerPage"
+                value={itemsPerPage}
+                onChange={(e) =>
+                  onItemsPerPageChange &&
+                  onItemsPerPageChange(parseInt(e.target.value))
+                }
+                className="flex-1 sm:flex-initial px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+            <input
+              type="text"
+              placeholder="Pretraži klijente..."
+              value={pretraga}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full sm:flex-1 lg:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
@@ -86,7 +211,7 @@ export default function KupciTabela({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filtrianiKupci.map((kupac) => (
+            {kupci.map((kupac) => (
               <tr
                 key={kupac._id}
                 className="hover:bg-gray-50 transition-colors cursor-pointer"
@@ -248,12 +373,41 @@ export default function KupciTabela({
           </tbody>
         </table>
 
-        {filtrianiKupci.length === 0 && (
+        {kupci.length === 0 && (
           <div className="text-center py-8 text-gray-500">
             Nema kupaca za prikaz
           </div>
         )}
       </div>
+
+      {/* Paginacija */}
+      {totalPages > 1 && onPageChange && (
+        <div className="mt-6">
+          <div className="text-sm text-gray-600 mb-3 text-center sm:text-left">
+            Prikazano {Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)} -{" "}
+            {Math.min(currentPage * itemsPerPage, totalItems)} od {totalItems}
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3">
+            <button
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            >
+              Prethodna
+            </button>
+            <div className="flex gap-1 justify-center overflow-x-auto pb-2 sm:pb-0">
+              {renderPageNumbers()}
+            </div>
+            <button
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            >
+              Sledeća
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -131,74 +131,78 @@ export default function RateTabela({
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Rate</h2>
-        <div className="flex gap-4">
-          <input
-            type="text"
-            placeholder="Pretraži po kupcu..."
-            value={pretraga}
-            onChange={(e) => setPretraga(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value as 'sve' | 'neplacene' | 'placene')}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="sve">Sve rate</option>
-            <option value="neplacene">Neplaćene</option>
-            <option value="placene">Plaćene</option>
-          </select>
+      <div className="mb-6">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+          <h2 className="text-2xl font-bold text-gray-800">Rate</h2>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <input
+              type="text"
+              placeholder="Pretraži po kupcu..."
+              value={pretraga}
+              onChange={(e) => setPretraga(e.target.value)}
+              className="w-full sm:flex-1 lg:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value as 'sve' | 'neplacene' | 'placene')}
+              className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="sve">Sve rate</option>
+              <option value="neplacene">Neplaćene</option>
+              <option value="placene">Plaćene</option>
+            </select>
+          </div>
         </div>
       </div>
 
       {/* Paginacija po mesecima */}
-      <div className="flex justify-center items-center gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
-        <button
-          onClick={prethodniMesec}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
-        >
-          ← Prethodni
-        </button>
-
-        <div className="flex items-center gap-3">
-          <select
-            value={izabraniMesec}
-            onChange={(e) => setIzabraniMesec(Number(e.target.value))}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold"
+      <div className="mb-6 bg-gray-50 p-4 rounded-lg">
+        <div className="flex flex-col sm:flex-row sm:justify-center sm:items-center gap-3 sm:gap-4">
+          <button
+            onClick={prethodniMesec}
+            className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold text-sm sm:text-base"
           >
-            {meseci.map((mesec, index) => (
-              <option key={index} value={index}>
-                {mesec}
-              </option>
-            ))}
-          </select>
+            ← Prethodni
+          </button>
 
-          <select
-            value={izabranaGodina}
-            onChange={(e) => setIzabranaGodina(Number(e.target.value))}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold"
-          >
-            {[...Array(5)].map((_, i) => {
-              const godina = danas.getFullYear() - 2 + i;
-              return (
-                <option key={godina} value={godina}>
-                  {godina}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <select
+              value={izabraniMesec}
+              onChange={(e) => setIzabraniMesec(Number(e.target.value))}
+              className="flex-1 sm:flex-initial px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-sm sm:text-base"
+            >
+              {meseci.map((mesec, index) => (
+                <option key={index} value={index}>
+                  {mesec}
                 </option>
-              );
-            })}
-          </select>
+              ))}
+            </select>
+
+            <select
+              value={izabranaGodina}
+              onChange={(e) => setIzabranaGodina(Number(e.target.value))}
+              className="flex-1 sm:flex-initial px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-sm sm:text-base"
+            >
+              {[...Array(5)].map((_, i) => {
+                const godina = danas.getFullYear() - 2 + i;
+                return (
+                  <option key={godina} value={godina}>
+                    {godina}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+
+          <button
+            onClick={sledeciMesec}
+            className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold text-sm sm:text-base"
+          >
+            Sledeći →
+          </button>
         </div>
 
-        <button
-          onClick={sledeciMesec}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
-        >
-          Sledeći →
-        </button>
-
-        <div className="ml-4 text-sm text-gray-600">
+        <div className="mt-3 text-center text-sm text-gray-600">
           Prikazano: <span className="font-bold text-gray-900">{filtriraneRate.length}</span> rata
         </div>
       </div>
