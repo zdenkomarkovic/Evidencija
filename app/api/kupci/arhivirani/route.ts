@@ -1,6 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getArhiviraniKupci, getRate } from '@/lib/supabase-helpers';
 
+interface KupacSaRatama {
+  _id: string;
+  ime: string;
+  email: string;
+  telefon: string;
+  firma?: string;
+  email2?: string;
+  telefon2?: string;
+  nacin_placanja?: string;
+  domen?: string;
+  arhiviran?: boolean;
+  brojRata: number;
+  brojNeplacenihRata: number;
+  ukupanDug: number;
+}
+
 // GET - Dohvati sve arhivirane kupce sa informacijama o ratama
 export async function GET(request: NextRequest) {
   try {
@@ -12,7 +28,7 @@ export async function GET(request: NextRequest) {
     const kupci = await getArhiviraniKupci();
 
     // Za svakog arhiviranog kupca dohvati informacije o ratama
-    const kupciSaRatama = await Promise.all(
+    const kupciSaRatama: KupacSaRatama[] = await Promise.all(
       kupci.map(async (kupac) => {
         const rate = await getRate({ kupac_id: (kupac as Record<string, string>)._id });
         const neplaceneRate = rate.filter((r) => !r.placeno);
@@ -23,7 +39,7 @@ export async function GET(request: NextRequest) {
           brojRata: rate.length,
           brojNeplacenihRata: neplaceneRate.length,
           ukupanDug,
-        };
+        } as KupacSaRatama;
       })
     );
 
@@ -33,10 +49,10 @@ export async function GET(request: NextRequest) {
       const searchLower = search.toLowerCase();
       filteredKupci = kupciSaRatama.filter(
         (kupac) =>
-          (kupac as any).ime?.toLowerCase().includes(searchLower) ||
-          (kupac as any).email?.toLowerCase().includes(searchLower) ||
-          (kupac as any).telefon?.includes(search) ||
-          (kupac as any).firma?.toLowerCase().includes(searchLower)
+          kupac.ime?.toLowerCase().includes(searchLower) ||
+          kupac.email?.toLowerCase().includes(searchLower) ||
+          kupac.telefon?.includes(search) ||
+          kupac.firma?.toLowerCase().includes(searchLower)
       );
     }
 

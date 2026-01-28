@@ -75,7 +75,7 @@ export default function KupciTabela({
     const pages = [];
     const maxVisiblePages = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
@@ -148,7 +148,10 @@ export default function KupciTabela({
           <h2 className="text-2xl font-bold text-gray-800">Klijenti</h2>
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
             <div className="flex items-center gap-2">
-              <label htmlFor="itemsPerPage" className="text-sm text-gray-600 whitespace-nowrap">
+              <label
+                htmlFor="itemsPerPage"
+                className="text-sm text-gray-600 whitespace-nowrap"
+              >
                 Prikaži:
               </label>
               <select
@@ -247,7 +250,9 @@ export default function KupciTabela({
                 </td>
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-900">{kupac.telefon}</span>
+                    <span className="text-sm text-gray-900">
+                      {kupac.telefon}
+                    </span>
                     <div className="flex gap-1">
                       <a
                         href={`tel:${kupac.telefon}`}
@@ -258,7 +263,10 @@ export default function KupciTabela({
                         📞
                       </a>
                       <a
-                        href={`viber://chat?number=${kupac.telefon.replace(/\s/g, '')}`}
+                        href={`viber://chat?number=${kupac.telefon.replace(
+                          /\s/g,
+                          ""
+                        )}`}
                         className="text-xs px-2 py-1 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded"
                         onClick={(e) => e.stopPropagation()}
                         title="Viber"
@@ -269,7 +277,9 @@ export default function KupciTabela({
                   </div>
                   {kupac.telefon2 && (
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-sm text-gray-900">{kupac.telefon2}</span>
+                      <span className="text-sm text-gray-900">
+                        {kupac.telefon2}
+                      </span>
                       <div className="flex gap-1">
                         <a
                           href={`tel:${kupac.telefon2}`}
@@ -280,7 +290,10 @@ export default function KupciTabela({
                           📞
                         </a>
                         <a
-                          href={`viber://chat?number=${kupac.telefon2.replace(/\s/g, '')}`}
+                          href={`viber://chat?number=${kupac.telefon2.replace(
+                            /\s/g,
+                            ""
+                          )}`}
                           className="text-xs px-2 py-1 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded"
                           onClick={(e) => e.stopPropagation()}
                           title="Viber"
@@ -384,7 +397,8 @@ export default function KupciTabela({
       {totalPages > 1 && onPageChange && (
         <div className="mt-6">
           <div className="text-sm text-gray-600 mb-3 text-center sm:text-left">
-            Prikazano {Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)} -{" "}
+            Prikazano{" "}
+            {Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)} -{" "}
             {Math.min(currentPage * itemsPerPage, totalItems)} od {totalItems}
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3">
