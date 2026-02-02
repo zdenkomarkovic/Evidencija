@@ -799,14 +799,9 @@ export default function AdminPage() {
               onKupacKlik={handleKupacKlik}
               onEdit={handleEditKupac}
               onDelete={handleDeleteKupac}
-              currentPage={kupciPage}
-              totalPages={kupciTotalPages}
-              totalItems={kupciTotal}
               itemsPerPage={kupciLimit}
-              onPageChange={(page) => setKupciPage(page)}
               onItemsPerPageChange={(limit) => {
                 setKupciLimit(limit);
-                setKupciPage(1); // Reset na prvu stranicu
               }}
             />
           )}
@@ -865,14 +860,9 @@ export default function AdminPage() {
                   onKupacKlik={handleKupacKlik}
                   onEdit={handleEditKupac}
                   onDelete={handleDeleteKupac}
-                  currentPage={arhiviraniKupciPage}
-                  totalPages={arhiviraniKupciTotalPages}
-                  totalItems={arhiviraniKupciTotal}
                   itemsPerPage={arhiviraniKupciLimit}
-                  onPageChange={(page) => setArhiviraniKupciPage(page)}
                   onItemsPerPageChange={(limit) => {
                     setArhiviraniKupciLimit(limit);
-                    setArhiviraniKupciPage(1); // Reset na prvu stranicu
                   }}
                 />
               </div>
