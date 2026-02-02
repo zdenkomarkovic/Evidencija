@@ -53,6 +53,9 @@ export async function POST(request: NextRequest) {
       kupac_id: kupacId,
       datum_pocetka: datumPocetka ? new Date(datumPocetka).toISOString() : null,
       datum_obnavljanja: new Date(datumObnavljanja).toISOString(),
+      placeno: false,
+      datum_placanja: null,
+      nacin_placanja: null,
       podsetnik_poslat: false,
     });
 
