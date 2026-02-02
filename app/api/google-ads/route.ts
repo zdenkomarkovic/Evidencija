@@ -38,6 +38,8 @@ export async function POST(request: NextRequest) {
       datumPocetka,
       datumIsteka,
       iznos,
+      iznosNastavka,
+      datumPrimeneIznosaNavstavka,
     } = body;
 
     if (
@@ -73,7 +75,13 @@ export async function POST(request: NextRequest) {
       datum_pocetka: new Date(datumPocetka).toISOString(),
       datum_isteka: new Date(datumIsteka).toISOString(),
       iznos,
+      iznos_nastavka: iznosNastavka || iznos,
+      datum_primene_iznosa_nastavka: datumPrimeneIznosaNavstavka ? new Date(datumPrimeneIznosaNavstavka).toISOString() : null,
       placeno: false,
+      datum_placanja: null,
+      aktivna: true,
+      datum_zaustavljanja: null,
+      datum_ponovnog_pokretanja: null,
     });
 
     return NextResponse.json(novaKampanja, { status: 201 });

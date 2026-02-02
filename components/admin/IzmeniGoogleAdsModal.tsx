@@ -21,7 +21,10 @@ interface GoogleAds {
   datumPocetka: string;
   datumIsteka: string;
   iznos: number;
+  iznosNastavka: number;
+  datumPrimeneIznosaNavstavka: string | null;
   placeno: boolean;
+  aktivna: boolean;
   nastavci: Nastavak[];
 }
 
@@ -45,6 +48,8 @@ export default function IzmeniGoogleAdsModal({
   const [imeGoogleNaloga, setImeGoogleNaloga] = useState('');
   const [datumPocetka, setDatumPocetka] = useState('');
   const [iznos, setIznos] = useState('');
+  const [iznosNastavka, setIznosNastavka] = useState('');
+  const [datumPrimene, setDatumPrimene] = useState('');
   const [placeno, setPlaceno] = useState(false);
   const [nastavci, setNastavci] = useState<Nastavak[]>([]);
   const [loading, setLoading] = useState(false);
@@ -67,6 +72,8 @@ export default function IzmeniGoogleAdsModal({
       setImeGoogleNaloga(kampanja.imeGoogleNaloga);
       setDatumPocetka(new Date(kampanja.datumPocetka).toISOString().split('T')[0]);
       setIznos(kampanja.iznos.toString());
+      setIznosNastavka(kampanja.iznosNastavka?.toString() || '');
+      setDatumPrimene(kampanja.datumPrimeneIznosaNavstavka ? new Date(kampanja.datumPrimeneIznosaNavstavka).toISOString().split('T')[0] : '');
       setPlaceno(kampanja.placeno || false);
       setNastavci(kampanja.nastavci.map(n => ({
         datum: new Date(n.datum).toISOString().split('T')[0],
@@ -77,9 +84,10 @@ export default function IzmeniGoogleAdsModal({
   }, [kampanja]);
 
   const dodajNastavak = () => {
+    const iznosZaNastavak = parseFloat(iznosNastavka) || parseFloat(iznos) || 0;
     const poslednji = nastavci.length > 0
       ? nastavci[nastavci.length - 1]
-      : { datum: getDatumIsteka(), iznos: parseFloat(iznos) || 0, placeno: false };
+      : { datum: getDatumIsteka(), iznos: iznosZaNastavak, placeno: false };
 
     // Dodaj mesec dana na poslednji datum nastavka
     const datumNastavka = new Date(poslednji.datum);
@@ -87,7 +95,7 @@ export default function IzmeniGoogleAdsModal({
 
     setNastavci([...nastavci, {
       datum: datumNastavka.toISOString().split('T')[0],
-      iznos: poslednji.iznos,
+      iznos: iznosZaNastavak,
       placeno: false,
     }]);
   };
@@ -129,6 +137,8 @@ export default function IzmeniGoogleAdsModal({
           datumPocetka,
           datumIsteka,
           iznos: parseFloat(iznos),
+          iznosNastavka: iznosNastavka ? parseFloat(iznosNastavka) : parseFloat(iznos),
+          datumPrimeneIznosaNavstavka: datumPrimene || null,
           placeno,
           nastavci,
         }),
@@ -245,7 +255,7 @@ export default function IzmeniGoogleAdsModal({
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Iznos (RSD)
+              Iznos prvog meseca (RSD)
             </label>
             <input
               type="number"
@@ -258,6 +268,41 @@ export default function IzmeniGoogleAdsModal({
               placeholder="10000"
             />
           </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Iznos za nastavak (mesečno) - RSD
+            </label>
+            <input
+              type="number"
+              value={iznosNastavka}
+              onChange={(e) => setIznosNastavka(e.target.value)}
+              min="0"
+              step="0.01"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder={iznos || "10000"}
+            />
+            <p className="mt-1 text-sm text-gray-500">
+              Ako nije uneto, koristiće se isti iznos kao prvi mesec
+            </p>
+          </div>
+
+          {iznosNastavka && (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Datum primene novog iznosa (opciono)
+              </label>
+              <input
+                type="date"
+                value={datumPrimene}
+                onChange={(e) => setDatumPrimene(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <p className="mt-1 text-sm text-gray-500">
+                Od ovog datuma će se primenjivati novi iznos. Ako nije uneto, primenjuje se odmah.
+              </p>
+            </div>
+          )}
 
           <div className="mb-6">
             <label className="flex items-center">

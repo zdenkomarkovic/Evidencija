@@ -60,9 +60,11 @@ interface Hosting {
 }
 
 interface Nastavak {
+  _id?: string;
   datum: string;
   iznos: number;
   placeno: boolean;
+  datumPlacanja?: string | null;
 }
 
 interface GoogleAds {
@@ -77,7 +79,13 @@ interface GoogleAds {
   datumPocetka: string;
   datumIsteka: string;
   iznos: number;
+  iznosNastavka: number;
+  datumPrimeneIznosaNavstavka: string | null;
   placeno: boolean;
+  datumPlacanja: string | null;
+  aktivna: boolean;
+  datumZaustavljanja: string | null;
+  datumPonovnogPokretanja: string | null;
   nastavci: Nastavak[];
 }
 
@@ -310,7 +318,7 @@ export default function AdminPage() {
     }
   };
 
-  const oznaciPlacenoOsnovniGoogleAds = async (kampanjaId: string) => {
+  const oznaciPlacenoOsnovniGoogleAds = async (kampanjaId: string, datumPlacanja?: string) => {
     try {
       const res = await fetch("/api/google-ads/oznaciPlaceno", {
         method: "POST",
@@ -318,6 +326,7 @@ export default function AdminPage() {
         body: JSON.stringify({
           kampanjaId,
           tipIznosa: "osnovni",
+          datumPlacanja: datumPlacanja || new Date().toISOString().split('T')[0],
         }),
       });
 
@@ -333,7 +342,10 @@ export default function AdminPage() {
 
   const oznaciPlacenoNastavakGoogleAds = async (
     kampanjaId: string,
-    nastavakIndex: number
+    nastavakId: string | null,
+    datumPocetka: string,
+    iznos: number,
+    datumPlacanja?: string
   ) => {
     try {
       const res = await fetch("/api/google-ads/oznaciPlaceno", {
@@ -342,7 +354,10 @@ export default function AdminPage() {
         body: JSON.stringify({
           kampanjaId,
           tipIznosa: "nastavak",
-          nastavakIndex,
+          nastavakId,
+          datumPocetka,
+          iznos,
+          datumPlacanja: datumPlacanja || new Date().toISOString().split('T')[0],
         }),
       });
 
@@ -350,6 +365,74 @@ export default function AdminPage() {
         ucitajPodatke();
       } else {
         console.error("Greška pri označavanju nastavka kao plaćenog");
+      }
+    } catch (error) {
+      console.error("Greška:", error);
+    }
+  };
+
+  const ponistiPlacenoOsnovniGoogleAds = async (kampanjaId: string) => {
+    try {
+      const res = await fetch("/api/google-ads/ponistiPlaceno", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kampanjaId,
+          tipIznosa: "osnovni",
+        }),
+      });
+
+      if (res.ok) {
+        ucitajPodatke();
+      } else {
+        console.error("Greška pri poništavanju plaćanja osnovnog iznosa");
+      }
+    } catch (error) {
+      console.error("Greška:", error);
+    }
+  };
+
+  const ponistiPlacenoNastavakGoogleAds = async (
+    kampanjaId: string,
+    nastavakId: string
+  ) => {
+    try {
+      const res = await fetch("/api/google-ads/ponistiPlaceno", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kampanjaId,
+          tipIznosa: "nastavak",
+          nastavakId,
+        }),
+      });
+
+      if (res.ok) {
+        ucitajPodatke();
+      } else {
+        console.error("Greška pri poništavanju plaćanja nastavka");
+      }
+    } catch (error) {
+      console.error("Greška:", error);
+    }
+  };
+
+  const toggleAktivnaGoogleAds = async (kampanjaId: string, aktivna: boolean, datum?: string) => {
+    try {
+      const res = await fetch("/api/google-ads/toggleAktivna", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kampanjaId,
+          aktivna,
+          datum,
+        }),
+      });
+
+      if (res.ok) {
+        ucitajPodatke();
+      } else {
+        console.error("Greška pri ažuriranju statusa kampanje");
       }
     } catch (error) {
       console.error("Greška:", error);
@@ -716,6 +799,9 @@ export default function AdminPage() {
               onDelete={handleDeleteGoogleAds}
               onOznaciPlacenoOsnovni={oznaciPlacenoOsnovniGoogleAds}
               onOznaciPlacenoNastavak={oznaciPlacenoNastavakGoogleAds}
+              onPonistiPlacenoOsnovni={ponistiPlacenoOsnovniGoogleAds}
+              onPonistiPlacenoNastavak={ponistiPlacenoNastavakGoogleAds}
+              onToggleAktivna={toggleAktivnaGoogleAds}
               onKupacKlik={handleKupacKlik}
             />
           )}
@@ -797,6 +883,9 @@ export default function AdminPage() {
                   onDelete={handleDeleteGoogleAds}
                   onOznaciPlacenoOsnovni={oznaciPlacenoOsnovniGoogleAds}
                   onOznaciPlacenoNastavak={oznaciPlacenoNastavakGoogleAds}
+                  onPonistiPlacenoOsnovni={ponistiPlacenoOsnovniGoogleAds}
+                  onPonistiPlacenoNastavak={ponistiPlacenoNastavakGoogleAds}
+                  onToggleAktivna={toggleAktivnaGoogleAds}
                   onKupacKlik={handleKupacKlik}
                 />
               </div>

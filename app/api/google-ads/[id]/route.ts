@@ -42,7 +42,7 @@ export async function PUT(
     const { id } = await params;
 
     const body = await request.json();
-    const { kupacId, imeKampanje, imeGoogleNaloga, datumPocetka, datumIsteka, iznos, placeno } = body;
+    const { kupacId, imeKampanje, imeGoogleNaloga, datumPocetka, datumIsteka, iznos, iznosNastavka, datumPrimeneIznosaNavstavka, placeno } = body;
 
     if (!kupacId || !imeKampanje || !imeGoogleNaloga || !datumPocetka || !datumIsteka || iznos === undefined) {
       return NextResponse.json(
@@ -67,6 +67,8 @@ export async function PUT(
       datum_pocetka: new Date(datumPocetka).toISOString(),
       datum_isteka: new Date(datumIsteka).toISOString(),
       iznos,
+      iznos_nastavka: iznosNastavka || iznos,
+      datum_primene_iznosa_nastavka: datumPrimeneIznosaNavstavka ? new Date(datumPrimeneIznosaNavstavka).toISOString() : null,
       placeno: placeno !== undefined ? placeno : false,
     });
 

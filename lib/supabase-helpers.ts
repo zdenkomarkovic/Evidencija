@@ -483,6 +483,7 @@ export interface GoogleAdsNastavak {
   datum: string;
   iznos: number;
   placeno: boolean;
+  datum_placanja: string | null;
   created_at: string;
 }
 
@@ -494,7 +495,13 @@ export interface GoogleAds {
   datum_pocetka: string;
   datum_isteka: string;
   iznos: number;
+  iznos_nastavka: number | null;
+  datum_primene_iznosa_nastavka: string | null;
   placeno: boolean;
+  datum_placanja: string | null;
+  aktivna: boolean;
+  datum_zaustavljanja: string | null;
+  datum_ponovnog_pokretanja: string | null;
   created_at: string;
   updated_at: string;
   nastavci?: GoogleAdsNastavak[];
@@ -543,12 +550,20 @@ export async function getGoogleAds(filters?: { kupac_id?: string; includeArhivir
     datumPocetka: ads.datum_pocetka,
     datumIsteka: ads.datum_isteka,
     iznos: ads.iznos,
+    iznosNastavka: ads.iznos_nastavka ?? ads.iznos,
+    datumPrimeneIznosaNavstavka: ads.datum_primene_iznosa_nastavka,
     placeno: ads.placeno,
+    datumPlacanja: ads.datum_placanja,
+    aktivna: ads.aktivna ?? true,
+    datumZaustavljanja: ads.datum_zaustavljanja,
+    datumPonovnogPokretanja: ads.datum_ponovnog_pokretanja,
     nastavci: ads.google_ads_nastavci
       ? ads.google_ads_nastavci.map((n: GoogleAdsNastavak) => ({
+          _id: n.id,
           datum: n.datum,
           iznos: n.iznos,
           placeno: n.placeno,
+          datumPlacanja: n.datum_placanja,
         }))
       : [],
   }));
@@ -599,12 +614,20 @@ export async function getArhiviraniGoogleAds() {
     datumPocetka: ads.datum_pocetka,
     datumIsteka: ads.datum_isteka,
     iznos: ads.iznos,
+    iznosNastavka: ads.iznos_nastavka ?? ads.iznos,
+    datumPrimeneIznosaNavstavka: ads.datum_primene_iznosa_nastavka,
     placeno: ads.placeno,
+    datumPlacanja: ads.datum_placanja,
+    aktivna: ads.aktivna ?? true,
+    datumZaustavljanja: ads.datum_zaustavljanja,
+    datumPonovnogPokretanja: ads.datum_ponovnog_pokretanja,
     nastavci: ads.google_ads_nastavci
       ? ads.google_ads_nastavci.map((n: GoogleAdsNastavak) => ({
+          _id: n.id,
           datum: n.datum,
           iznos: n.iznos,
           placeno: n.placeno,
+          datumPlacanja: n.datum_placanja,
         }))
       : [],
   })).filter((ads) => ads.kupacId?.arhiviran);
