@@ -56,6 +56,9 @@ interface Hosting {
     email: string;
   };
   datumObnavljanja: string;
+  placeno: boolean;
+  datumPlacanja?: string | null;
+  nacinPlacanja?: string | null;
   podsetnikPoslat: boolean;
 }
 
@@ -158,7 +161,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     ucitajPodatke();
-  }, [kupciPage, kupciLimit, kupciSearch]);
+  }, [kupciPage, kupciLimit]);
 
   useEffect(() => {
     ucitajArhiviraneKupce();
@@ -167,7 +170,8 @@ export default function AdminPage() {
   const ucitajPodatke = async () => {
     setLoading(true);
     try {
-      const kupciUrl = `/api/kupci?page=${kupciPage}&limit=${kupciLimit}&search=${encodeURIComponent(kupciSearch)}`;
+      // Učitaj SVE kupce odjednom za client-side pretragu
+      const kupciUrl = `/api/kupci?page=1&limit=10000`;
       const [kupciRes, rateRes, hostingRes, kampanjeRes] = await Promise.all([
         fetch(kupciUrl),
         fetch("/api/rate"),
@@ -318,6 +322,28 @@ export default function AdminPage() {
     }
   };
 
+  const oznaciPlacenoHosting = async (hostingId: string) => {
+    try {
+      const res = await fetch("/api/hosting/oznaciPlaceno", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          hostingId,
+          nacinPlacanja: "manual",
+          datumPlacanja: new Date().toISOString().split('T')[0]
+        }),
+      });
+
+      if (res.ok) {
+        ucitajPodatke();
+      } else {
+        console.error("Greška pri označavanju hostinga kao plaćenog");
+      }
+    } catch (error) {
+      console.error("Greška:", error);
+    }
+  };
+
   const oznaciPlacenoOsnovniGoogleAds = async (kampanjaId: string, datumPlacanja?: string) => {
     try {
       const res = await fetch("/api/google-ads/oznaciPlaceno", {
@@ -439,15 +465,30 @@ export default function AdminPage() {
     }
   };
 
-  const handleKupacKlik = (kupacId: string) => {
+  const handleKupacKlik = async (kupacId: string) => {
     // Traži kupca i u normalnim i u arhiviranim kupcima
     let kupac = kupci.find((k) => k._id === kupacId);
     if (!kupac) {
       kupac = arhiviraniKupci.find((k) => k._id === kupacId);
     }
+
+    // Ako kupac nije pronađen u učitanim listama, pokušaj da ga učitaš direktno
+    if (!kupac) {
+      try {
+        const res = await fetch(`/api/kupci/${kupacId}`);
+        if (res.ok) {
+          kupac = await res.json();
+        }
+      } catch (error) {
+        console.error("Greška pri učitavanju kupca:", error);
+      }
+    }
+
     if (kupac) {
       setIzabraniKupacZaDetalje(kupac);
       setKupacDetaljiModalOpen(true);
+    } else {
+      alert(`Kupac sa ID-om ${kupacId} nije pronađen.`);
     }
   };
 
@@ -787,6 +828,7 @@ export default function AdminPage() {
             <HostingTabela
               hosting={hosting}
               onResetujPodsetnik={resetujPodsetnikHosting}
+              onOznaciPlaceno={oznaciPlacenoHosting}
               onEdit={handleEditHosting}
               onDelete={handleDeleteHosting}
               onKupacKlik={handleKupacKlik}
@@ -866,6 +908,7 @@ export default function AdminPage() {
                 <HostingTabela
                   hosting={arhiviraniHosting}
                   onResetujPodsetnik={resetujPodsetnikHosting}
+                  onOznaciPlaceno={oznaciPlacenoHosting}
                   onEdit={handleEditHosting}
                   onDelete={handleDeleteHosting}
                   onKupacKlik={handleKupacKlik}

@@ -100,7 +100,22 @@ export async function getKupacById(id: string) {
     .single();
 
   if (error) throw error;
-  return data as Kupac;
+
+  // Mapiranje za kompatibilnost sa frontend-om (snake_case -> camelCase i id -> _id)
+  return {
+    _id: data.id,
+    ime: data.ime,
+    firma: data.firma,
+    email: data.email,
+    email2: data.email2,
+    telefon: data.telefon,
+    telefon2: data.telefon2,
+    nacinPlacanja: data.nacin_placanja,
+    domen: data.domen,
+    arhiviran: data.arhiviran,
+    created_at: data.created_at,
+    updated_at: data.updated_at,
+  };
 }
 
 export async function createKupac(
@@ -321,6 +336,9 @@ export interface Hosting {
   kupac_id: string;
   datum_pocetka?: string | null;
   datum_obnavljanja: string;
+  placeno: boolean;
+  datum_placanja?: string | null;
+  nacin_placanja?: string | null;
   podsetnik_poslat: boolean;
   created_at: string;
   updated_at: string;
@@ -368,6 +386,9 @@ export async function getHosting(filters?: {
       : null,
     datumPocetka: host.datum_pocetka,
     datumObnavljanja: host.datum_obnavljanja,
+    placeno: host.placeno ?? false,
+    datumPlacanja: host.datum_placanja,
+    nacinPlacanja: host.nacin_placanja,
     podsetnikPoslat: host.podsetnik_poslat,
   }));
 
@@ -414,6 +435,9 @@ export async function getArhiviraniHosting() {
         : null,
       datumPocetka: host.datum_pocetka,
       datumObnavljanja: host.datum_obnavljanja,
+      placeno: host.placeno ?? false,
+      datumPlacanja: host.datum_placanja,
+      nacinPlacanja: host.nacin_placanja,
       podsetnikPoslat: host.podsetnik_poslat,
     }))
     .filter((host) => host.kupacId?.arhiviran);

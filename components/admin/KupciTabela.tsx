@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 interface Kupac {
   _id: string;
@@ -45,31 +45,33 @@ export default function KupciTabela({
   onSearchChange,
 }: KupciTabelaProps) {
   const [pretraga, setPretraga] = useState("");
-  const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [currentLocalPage, setCurrentLocalPage] = useState(1);
 
-  const handleSearchChange = (value: string) => {
-    setPretraga(value);
+  // CLIENT-SIDE filtriranje - bez API poziva
+  const filtriraniKupci = kupci.filter((kupac) => {
+    if (!pretraga) return true;
+    const searchLower = pretraga.toLowerCase();
+    return (
+      kupac.ime?.toLowerCase().includes(searchLower) ||
+      kupac.firma?.toLowerCase().includes(searchLower) ||
+      kupac.email?.toLowerCase().includes(searchLower) ||
+      kupac.email2?.toLowerCase().includes(searchLower) ||
+      kupac.telefon?.toLowerCase().includes(searchLower) ||
+      kupac.telefon2?.toLowerCase().includes(searchLower) ||
+      kupac.domen?.toLowerCase().includes(searchLower)
+    );
+  });
 
-    // Debounce search
-    if (searchTimeout.current) {
-      clearTimeout(searchTimeout.current);
-    }
+  // Lokalna paginacija
+  const startIndex = (currentLocalPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const prikazaniKupci = filtriraniKupci.slice(startIndex, endIndex);
+  const localTotalPages = Math.ceil(filtriraniKupci.length / itemsPerPage);
 
-    searchTimeout.current = setTimeout(() => {
-      if (onSearchChange) {
-        onSearchChange(value);
-      }
-    }, 500);
-  };
-
-  // Cleanup timeout on unmount
+  // Reset na prvu stranicu kada se menja pretraga
   useEffect(() => {
-    return () => {
-      if (searchTimeout.current) {
-        clearTimeout(searchTimeout.current);
-      }
-    };
-  }, []);
+    setCurrentLocalPage(1);
+  }, [pretraga]);
 
   const renderPageNumbers = () => {
     const pages = [];
@@ -173,7 +175,7 @@ export default function KupciTabela({
               type="text"
               placeholder="Pretraži klijente..."
               value={pretraga}
-              onChange={(e) => handleSearchChange(e.target.value)}
+              onChange={(e) => setPretraga(e.target.value)}
               className="w-full sm:flex-1 lg:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -214,7 +216,7 @@ export default function KupciTabela({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {kupci.map((kupac) => (
+            {prikazaniKupci.map((kupac) => (
               <tr
                 key={kupac._id}
                 className="hover:bg-gray-50 transition-colors cursor-pointer"
@@ -386,35 +388,38 @@ export default function KupciTabela({
           </tbody>
         </table>
 
-        {kupci.length === 0 && (
+        {prikazaniKupci.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            Nema kupaca za prikaz
+            {pretraga ? 'Nema rezultata za unetu pretragu' : 'Nema kupaca za prikaz'}
           </div>
         )}
       </div>
 
-      {/* Paginacija */}
-      {totalPages > 1 && onPageChange && (
+      {/* Lokalna paginacija */}
+      {localTotalPages > 1 && (
         <div className="mt-6">
           <div className="text-sm text-gray-600 mb-3 text-center sm:text-left">
             Prikazano{" "}
-            {Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)} -{" "}
-            {Math.min(currentPage * itemsPerPage, totalItems)} od {totalItems}
+            {Math.min((currentLocalPage - 1) * itemsPerPage + 1, filtriraniKupci.length)} -{" "}
+            {Math.min(currentLocalPage * itemsPerPage, filtriraniKupci.length)} od {filtriraniKupci.length}
+            {pretraga && ` (filtrirano od ${kupci.length})`}
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3">
             <button
-              onClick={() => onPageChange(currentPage - 1)}
-              disabled={currentPage === 1}
+              onClick={() => setCurrentLocalPage(currentLocalPage - 1)}
+              disabled={currentLocalPage === 1}
               className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               Prethodna
             </button>
-            <div className="flex gap-1 justify-center overflow-x-auto pb-2 sm:pb-0">
-              {renderPageNumbers()}
+            <div className="flex gap-1 justify-center">
+              <span className="px-3 py-2 text-sm">
+                Stranica {currentLocalPage} od {localTotalPages}
+              </span>
             </div>
             <button
-              onClick={() => onPageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
+              onClick={() => setCurrentLocalPage(currentLocalPage + 1)}
+              disabled={currentLocalPage === localTotalPages}
               className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               Sledeća

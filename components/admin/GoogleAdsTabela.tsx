@@ -246,8 +246,44 @@ export default function GoogleAdsTabela({
     }
   }, [dostupniMeseci, izabraniMesec]);
 
-  // Filter po izabranom mesecu
-  const konacneKampanje = kampanjePoMesecima[izabraniMesec]?.kampanje || [];
+  // Filter po izabranom mesecu i sortiranje po datumu pocetka perioda u aktuelnom mesecu
+  const konacneKampanje = [...(kampanjePoMesecima[izabraniMesec]?.kampanje || [])].sort((a, b) => {
+    // Funkcija koja vraća datum početka perioda za datu kampanju u izabranom mesecu
+    const getPeriodStartDate = (kampanja: GoogleAds) => {
+      const pocetakKampanje = new Date(kampanja.datumPocetka);
+      const istekKampanje = new Date(kampanja.datumIsteka);
+      const mesecPocetkaKampanje = `${pocetakKampanje.getFullYear()}-${String(pocetakKampanje.getMonth() + 1).padStart(2, '0')}`;
+
+      // Ako je ovo mesec kada je kampanja počela, koristi datum početka kampanje
+      if (izabraniMesec === mesecPocetkaKampanje) {
+        return pocetakKampanje.getTime();
+      }
+
+      // Proveri da li postoji nastavak za ovaj mesec
+      if (kampanja.nastavci && kampanja.nastavci.length > 0) {
+        for (const nastavak of kampanja.nastavci) {
+          const pocetakNastavka = new Date(nastavak.datum);
+          const mesecNastavka = `${pocetakNastavka.getFullYear()}-${String(pocetakNastavka.getMonth() + 1).padStart(2, '0')}`;
+
+          if (izabraniMesec === mesecNastavka) {
+            return pocetakNastavka.getTime();
+          }
+        }
+      }
+
+      // Ako nema nastavka, izračunaj datum budućeg perioda
+      const [godina, mesec] = izabraniMesec.split('-').map(Number);
+      const meseciBrojac = (godina - istekKampanje.getFullYear()) * 12 + (mesec - 1 - istekKampanje.getMonth());
+      const pocetakNovogPerioda = new Date(istekKampanje);
+      pocetakNovogPerioda.setMonth(istekKampanje.getMonth() + meseciBrojac);
+
+      return pocetakNovogPerioda.getTime();
+    };
+
+    const dateA = getPeriodStartDate(a);
+    const dateB = getPeriodStartDate(b);
+    return dateA - dateB;
+  });
 
   // Navigacija između meseci
   const getMesecNaziv = (mesecKey: string) => {
@@ -380,6 +416,9 @@ export default function GoogleAdsTabela({
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                #
+              </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Kupac
               </th>
@@ -401,7 +440,7 @@ export default function GoogleAdsTabela({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {konacneKampanje.map((kampanja) => {
+            {konacneKampanje.map((kampanja, index) => {
               // Izračunaj koji period je aktivan u izabranom mesecu
               const getPeriodZaMesec = () => {
                 const [godina, mesec] = izabraniMesec.split('-').map(Number);
@@ -548,6 +587,11 @@ export default function GoogleAdsTabela({
                       : ''
                   }`}
                 >
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <div className="text-sm font-semibold text-gray-600">
+                      {index + 1}.
+                    </div>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex flex-col gap-1">
                       {imaNeplacene && (
@@ -559,9 +603,13 @@ export default function GoogleAdsTabela({
                       )}
                       <div
                         className={`text-sm font-medium text-gray-900 ${
-                          onKupacKlik ? 'cursor-pointer hover:text-indigo-600 hover:underline' : ''
+                          onKupacKlik && kampanja.kupacId?._id ? 'cursor-pointer hover:text-indigo-600 hover:underline' : ''
                         }`}
-                        onClick={() => onKupacKlik && kampanja.kupacId?._id && onKupacKlik(kampanja.kupacId._id)}
+                        onClick={() => {
+                          if (onKupacKlik && kampanja.kupacId?._id) {
+                            onKupacKlik(kampanja.kupacId._id);
+                          }
+                        }}
                       >
                         {kampanja.kupacId?.ime || 'N/A'}
                       </div>
@@ -761,6 +809,81 @@ export default function GoogleAdsTabela({
             Nema Google Ads kampanja za prikaz
           </div>
         )}
+
+        {/* Zbir iznosa */}
+        {konacneKampanje.length > 0 && (() => {
+          let ukupno = 0;
+          let neplaceno = 0;
+
+          konacneKampanje.forEach((kampanja) => {
+            const pocetakKampanje = new Date(kampanja.datumPocetka);
+            const istekKampanje = new Date(kampanja.datumIsteka);
+            const mesecPocetkaKampanje = `${pocetakKampanje.getFullYear()}-${String(pocetakKampanje.getMonth() + 1).padStart(2, '0')}`;
+
+            let iznos = 0;
+            let placeno = false;
+
+            if (izabraniMesec === mesecPocetkaKampanje) {
+              iznos = kampanja.iznos;
+              placeno = kampanja.placeno;
+            } else if (kampanja.nastavci) {
+              for (const nastavak of kampanja.nastavci) {
+                const pocetakNastavka = new Date(nastavak.datum);
+                const mesecNastavka = `${pocetakNastavka.getFullYear()}-${String(pocetakNastavka.getMonth() + 1).padStart(2, '0')}`;
+                if (izabraniMesec === mesecNastavka) {
+                  iznos = nastavak.iznos;
+                  placeno = nastavak.placeno;
+                  break;
+                }
+              }
+            }
+
+            if (!iznos) {
+              const [godina, mesec] = izabraniMesec.split('-').map(Number);
+              const meseciBrojac = (godina - istekKampanje.getFullYear()) * 12 + (mesec - 1 - istekKampanje.getMonth());
+              const pocetakNovogPerioda = new Date(istekKampanje);
+              pocetakNovogPerioda.setMonth(istekKampanje.getMonth() + meseciBrojac);
+
+              let iznosZaKoriscenje = kampanja.iznosNastavka;
+              if (kampanja.datumPrimeneIznosaNavstavka) {
+                const datumPrimene = new Date(kampanja.datumPrimeneIznosaNavstavka);
+                if (pocetakNovogPerioda < datumPrimene) {
+                  iznosZaKoriscenje = kampanja.iznos;
+                }
+              }
+              iznos = iznosZaKoriscenje;
+              placeno = false;
+            }
+
+            ukupno += iznos;
+            if (!placeno) {
+              neplaceno += iznos;
+            }
+          });
+
+          return (
+            <div className="mt-4 p-4 bg-gray-50 border-t-2 border-gray-300 rounded-lg">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-semibold text-gray-700">
+                  Ukupno ({konacneKampanje.length} {konacneKampanje.length === 1 ? 'kampanja' : 'kampanja'}):
+                </span>
+                <span className="text-lg font-bold text-gray-900">
+                  {ukupno.toLocaleString('sr-RS')} RSD
+                </span>
+              </div>
+              {neplaceno > 0 && (
+                <div className="flex justify-between items-center mt-2">
+                  <span className="text-sm font-semibold text-red-700">
+                    Neplaćeno:
+                  </span>
+                  <span className="text-lg font-bold text-red-600">
+                    {neplaceno.toLocaleString('sr-RS')} RSD
+                  </span>
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       <OznaciPlacenoModal

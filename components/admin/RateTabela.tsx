@@ -358,6 +358,28 @@ export default function RateTabela({
             Nema rata za prikaz
           </div>
         )}
+
+        {/* Zbir iznosa */}
+        {filtriraneRate.length > 0 && (
+          <div className="mt-4 p-4 bg-gray-50 border-t-2 border-gray-300 rounded-lg">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-semibold text-gray-700">
+                Ukupno ({filtriraneRate.length} {filtriraneRate.length === 1 ? 'rata' : 'rata'}):
+              </span>
+              <span className="text-lg font-bold text-gray-900">
+                {filtriraneRate.reduce((sum, rata) => sum + rata.iznos, 0).toLocaleString('sr-RS')} RSD
+              </span>
+            </div>
+            <div className="flex justify-between items-center mt-2">
+              <span className="text-sm font-semibold text-red-700">
+                Neplaćeno ({filtriraneRate.filter(r => !r.placeno).length}):
+              </span>
+              <span className="text-lg font-bold text-red-600">
+                {filtriraneRate.filter(r => !r.placeno).reduce((sum, rata) => sum + rata.iznos, 0).toLocaleString('sr-RS')} RSD
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal za unos datuma plaćanja */}

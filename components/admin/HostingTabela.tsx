@@ -13,12 +13,16 @@ interface Hosting {
   kupacId: Kupac;
   datumPocetka?: string;
   datumObnavljanja: string;
+  placeno: boolean;
+  datumPlacanja?: string | null;
+  nacinPlacanja?: string | null;
   podsetnikPoslat: boolean;
 }
 
 interface HostingTabelaProps {
   hosting: Hosting[];
   onResetujPodsetnik: (hostingId: string) => void;
+  onOznaciPlaceno: (hostingId: string) => void;
   onEdit: (hosting: Hosting) => void;
   onDelete: (hostingId: string) => void;
   onKupacKlik?: (kupacId: string) => void;
@@ -27,12 +31,14 @@ interface HostingTabelaProps {
 export default function HostingTabela({
   hosting,
   onResetujPodsetnik,
+  onOznaciPlaceno,
   onEdit,
   onDelete,
   onKupacKlik,
 }: HostingTabelaProps) {
   const [pretraga, setPretraga] = useState('');
   const [izabraniMesec, setIzabraniMesec] = useState<string>('');
+  const [filter, setFilter] = useState<'sve' | 'neplacene' | 'placene'>('neplacene');
 
   // Grupisanje hosting zapisa po mesecima
   const hostingPoMesecima = useMemo(() => {
@@ -78,9 +84,15 @@ export default function HostingTabela({
   // Hosting za trenutno izabrani mesec
   const hostingZaMesec = izabraniMesec ? hostingPoMesecima[izabraniMesec] || [] : [];
 
-  const filtriraniHosting = hostingZaMesec.filter((h) =>
-    h.kupacId?.ime?.toLowerCase().includes(pretraga.toLowerCase())
-  );
+  const filtriraniHosting = hostingZaMesec
+    .filter((h) => {
+      if (filter === 'neplacene') return !h.placeno;
+      if (filter === 'placene') return h.placeno;
+      return true;
+    })
+    .filter((h) =>
+      h.kupacId?.ime?.toLowerCase().includes(pretraga.toLowerCase())
+    );
 
   // Navigacija između meseci
   const idiNaPrethodnMesec = () => {
@@ -136,13 +148,24 @@ export default function HostingTabela({
       <div className="mb-6">
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
           <h2 className="text-2xl font-bold text-gray-800">Hosting</h2>
-          <input
-            type="text"
-            placeholder="Pretraži po kupcu..."
-            value={pretraga}
-            onChange={(e) => setPretraga(e.target.value)}
-            className="w-full lg:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <input
+              type="text"
+              placeholder="Pretraži po kupcu..."
+              value={pretraga}
+              onChange={(e) => setPretraga(e.target.value)}
+              className="w-full sm:flex-1 lg:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value as 'sve' | 'neplacene' | 'placene')}
+              className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="sve">Svi hosting zapisi</option>
+              <option value="neplacene">Neplaćeno</option>
+              <option value="placene">Plaćeno</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -175,6 +198,7 @@ export default function HostingTabela({
               </select>
               <span className="text-xs sm:text-sm text-gray-500">
                 ({filtriraniHosting.length} {filtriraniHosting.length === 1 ? 'zapis' : 'zapisa'})
+                {filter !== 'sve' && ` - ${filter === 'neplacene' ? 'Neplaćeno' : 'Plaćeno'}`}
               </span>
             </div>
 
@@ -212,6 +236,9 @@ export default function HostingTabela({
                 Preostalo dana
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status / Datum
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Podsetnik
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -227,7 +254,7 @@ export default function HostingTabela({
                 <tr
                   key={h._id}
                   className={`hover:bg-gray-50 transition-colors ${
-                    dana <= 7 ? 'bg-red-50' : dana <= 30 ? 'bg-yellow-50' : ''
+                    !h.placeno && dana <= 7 ? 'bg-red-50' : !h.placeno && dana <= 30 ? 'bg-yellow-50' : ''
                   }`}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -283,6 +310,24 @@ export default function HostingTabela({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex flex-col gap-1">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          h.placeno
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {h.placeno ? 'Plaćeno' : 'Neplaćeno'}
+                      </span>
+                      {h.datumPlacanja && (
+                        <div className="text-xs text-gray-500">
+                          {formatDatum(h.datumPlacanja)}
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         h.podsetnikPoslat
@@ -295,6 +340,14 @@ export default function HostingTabela({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex gap-2 flex-wrap">
+                      {!h.placeno && (
+                        <button
+                          onClick={() => onOznaciPlaceno(h._id)}
+                          className="text-green-600 hover:text-green-900"
+                        >
+                          Plaćeno
+                        </button>
+                      )}
                       {h.podsetnikPoslat && (
                         <button
                           onClick={() => onResetujPodsetnik(h._id)}
@@ -331,6 +384,20 @@ export default function HostingTabela({
         {dostupniMeseci.length === 0 && (
           <div className="text-center py-8 text-gray-500">
             Nema hosting zapisa za prikaz
+          </div>
+        )}
+
+        {/* Ukupan broj hostinga */}
+        {filtriraniHosting.length > 0 && (
+          <div className="mt-4 p-4 bg-gray-50 border-t-2 border-gray-300 rounded-lg">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-semibold text-gray-700">
+                Ukupno hosting zapisa u ovom mesecu:
+              </span>
+              <span className="text-lg font-bold text-gray-900">
+                {filtriraniHosting.length}
+              </span>
+            </div>
           </div>
         )}
       </div>
