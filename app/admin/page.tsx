@@ -111,14 +111,12 @@ export default function AdminPage() {
   const [kupciLimit, setKupciLimit] = useState(25);
   const [kupciTotal, setKupciTotal] = useState(0);
   const [kupciTotalPages, setKupciTotalPages] = useState(0);
-  const [kupciSearch, setKupciSearch] = useState("");
 
   // Paginacija za arhivirane kupce
   const [arhiviraniKupciPage, setArhiviraniKupciPage] = useState(1);
   const [arhiviraniKupciLimit, setArhiviraniKupciLimit] = useState(25);
   const [arhiviraniKupciTotal, setArhiviraniKupciTotal] = useState(0);
   const [arhiviraniKupciTotalPages, setArhiviraniKupciTotalPages] = useState(0);
-  const [arhiviraniKupciSearch, setArhiviraniKupciSearch] = useState("");
 
   // Modali za dodavanje
   const [kupcaModalOpen, setKupcaModalOpen] = useState(false);
@@ -165,7 +163,8 @@ export default function AdminPage() {
 
   useEffect(() => {
     ucitajArhiviraneKupce();
-  }, [arhiviraniKupciPage, arhiviraniKupciLimit, arhiviraniKupciSearch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [arhiviraniKupciPage, arhiviraniKupciLimit]);
 
   const ucitajPodatke = async () => {
     setLoading(true);
@@ -211,7 +210,8 @@ export default function AdminPage() {
 
   const ucitajArhiviraneKupce = async () => {
     try {
-      const arhiviraniKupciUrl = `/api/kupci/arhivirani?page=${arhiviraniKupciPage}&limit=${arhiviraniKupciLimit}&search=${encodeURIComponent(arhiviraniKupciSearch)}`;
+      // Učitaj SVE arhivirane kupce odjednom za client-side pretragu
+      const arhiviraniKupciUrl = `/api/kupci/arhivirani?page=1&limit=10000`;
       const [kupciRes, rateRes, hostingRes, kampanjeRes] = await Promise.all([
         fetch(arhiviraniKupciUrl),
         fetch("/api/rate/arhivirani"),
@@ -808,10 +808,6 @@ export default function AdminPage() {
                 setKupciLimit(limit);
                 setKupciPage(1); // Reset na prvu stranicu
               }}
-              onSearchChange={(search) => {
-                setKupciSearch(search);
-                setKupciPage(1); // Reset na prvu stranicu
-              }}
             />
           )}
           {activeTab === "rate" && (
@@ -876,10 +872,6 @@ export default function AdminPage() {
                   onPageChange={(page) => setArhiviraniKupciPage(page)}
                   onItemsPerPageChange={(limit) => {
                     setArhiviraniKupciLimit(limit);
-                    setArhiviraniKupciPage(1); // Reset na prvu stranicu
-                  }}
-                  onSearchChange={(search) => {
-                    setArhiviraniKupciSearch(search);
                     setArhiviraniKupciPage(1); // Reset na prvu stranicu
                   }}
                 />

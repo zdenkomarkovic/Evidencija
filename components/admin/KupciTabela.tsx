@@ -24,11 +24,9 @@ interface KupciTabelaProps {
   onDelete: (kupacId: string) => void;
   currentPage?: number;
   totalPages?: number;
-  totalItems?: number;
   itemsPerPage?: number;
   onPageChange?: (page: number) => void;
   onItemsPerPageChange?: (itemsPerPage: number) => void;
-  onSearchChange?: (search: string) => void;
 }
 
 export default function KupciTabela({
@@ -36,13 +34,8 @@ export default function KupciTabela({
   onKupacKlik,
   onEdit,
   onDelete,
-  currentPage = 1,
-  totalPages = 1,
-  totalItems = 0,
   itemsPerPage = 25,
-  onPageChange,
   onItemsPerPageChange,
-  onSearchChange,
 }: KupciTabelaProps) {
   const [pretraga, setPretraga] = useState("");
   const [currentLocalPage, setCurrentLocalPage] = useState(1);
@@ -72,76 +65,6 @@ export default function KupciTabela({
   useEffect(() => {
     setCurrentLocalPage(1);
   }, [pretraga]);
-
-  const renderPageNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    // First page
-    if (startPage > 1) {
-      pages.push(
-        <button
-          key={1}
-          onClick={() => onPageChange && onPageChange(1)}
-          className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50"
-        >
-          1
-        </button>
-      );
-      if (startPage > 2) {
-        pages.push(
-          <span key="ellipsis-start" className="px-2 text-gray-500">
-            ...
-          </span>
-        );
-      }
-    }
-
-    // Page numbers
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(
-        <button
-          key={i}
-          onClick={() => onPageChange && onPageChange(i)}
-          className={`px-3 py-1 border rounded ${
-            i === currentPage
-              ? "bg-indigo-600 text-white border-indigo-600"
-              : "border-gray-300 hover:bg-gray-50"
-          }`}
-        >
-          {i}
-        </button>
-      );
-    }
-
-    // Last page
-    if (endPage < totalPages) {
-      if (endPage < totalPages - 1) {
-        pages.push(
-          <span key="ellipsis-end" className="px-2 text-gray-500">
-            ...
-          </span>
-        );
-      }
-      pages.push(
-        <button
-          key={totalPages}
-          onClick={() => onPageChange && onPageChange(totalPages)}
-          className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50"
-        >
-          {totalPages}
-        </button>
-      );
-    }
-
-    return pages;
-  };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
