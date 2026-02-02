@@ -106,17 +106,13 @@ export default function AdminPage() {
     "kupci" | "rate" | "hosting" | "googleads" | "arhivirani"
   >("kupci");
 
-  // Paginacija za kupce
-  const [kupciPage, setKupciPage] = useState(1);
+  // Limit za prikaz kupaca
   const [kupciLimit, setKupciLimit] = useState(25);
   const [kupciTotal, setKupciTotal] = useState(0);
-  const [kupciTotalPages, setKupciTotalPages] = useState(0);
 
-  // Paginacija za arhivirane kupce
-  const [arhiviraniKupciPage, setArhiviraniKupciPage] = useState(1);
+  // Limit za prikaz arhiviranih kupaca
   const [arhiviraniKupciLimit, setArhiviraniKupciLimit] = useState(25);
   const [arhiviraniKupciTotal, setArhiviraniKupciTotal] = useState(0);
-  const [arhiviraniKupciTotalPages, setArhiviraniKupciTotalPages] = useState(0);
 
   // Modali za dodavanje
   const [kupcaModalOpen, setKupcaModalOpen] = useState(false);
@@ -159,12 +155,13 @@ export default function AdminPage() {
 
   useEffect(() => {
     ucitajPodatke();
-  }, [kupciPage, kupciLimit]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kupciLimit]);
 
   useEffect(() => {
     ucitajArhiviraneKupce();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [arhiviraniKupciPage, arhiviraniKupciLimit]);
+  }, [arhiviraniKupciLimit]);
 
   const ucitajPodatke = async () => {
     setLoading(true);
@@ -187,7 +184,6 @@ export default function AdminPage() {
       if (kupciData.data && kupciData.pagination) {
         setKupci(Array.isArray(kupciData.data) ? kupciData.data : []);
         setKupciTotal(kupciData.pagination.total);
-        setKupciTotalPages(kupciData.pagination.totalPages);
       } else {
         // Fallback za stari format
         setKupci(Array.isArray(kupciData) ? kupciData : []);
@@ -228,7 +224,6 @@ export default function AdminPage() {
       if (kupciData.data && kupciData.pagination) {
         setArhiviraniKupci(Array.isArray(kupciData.data) ? kupciData.data : []);
         setArhiviraniKupciTotal(kupciData.pagination.total);
-        setArhiviraniKupciTotalPages(kupciData.pagination.totalPages);
       } else {
         // Fallback za stari format
         setArhiviraniKupci(Array.isArray(kupciData) ? kupciData : []);
