@@ -238,9 +238,13 @@ export default function HostingTabela({
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div
                       className={`text-sm font-medium text-gray-900 ${
-                        onKupacKlik ? 'cursor-pointer hover:text-indigo-600 hover:underline' : ''
+                        onKupacKlik && h.kupacId?._id ? 'cursor-pointer hover:text-indigo-600 hover:underline' : ''
                       }`}
-                      onClick={() => onKupacKlik && h.kupacId?._id && onKupacKlik(h.kupacId._id)}
+                      onClick={() => {
+                        if (onKupacKlik && h.kupacId?._id) {
+                          onKupacKlik(h.kupacId._id);
+                        }
+                      }}
                     >
                       {h.kupacId?.ime || 'N/A'}
                     </div>

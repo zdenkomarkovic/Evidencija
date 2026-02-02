@@ -258,9 +258,13 @@ export default function RateTabela({
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div
                     className={`text-sm font-medium text-gray-900 ${
-                      onKupacKlik ? 'cursor-pointer hover:text-indigo-600 hover:underline' : ''
+                      onKupacKlik && rata.kupacId?._id ? 'cursor-pointer hover:text-indigo-600 hover:underline' : ''
                     }`}
-                    onClick={() => onKupacKlik && rata.kupacId?._id && onKupacKlik(rata.kupacId._id)}
+                    onClick={() => {
+                      if (onKupacKlik && rata.kupacId?._id) {
+                        onKupacKlik(rata.kupacId._id);
+                      }
+                    }}
                   >
                     {rata.kupacId?.ime || 'N/A'}
                   </div>
