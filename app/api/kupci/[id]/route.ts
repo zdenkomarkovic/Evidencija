@@ -37,7 +37,8 @@ export async function PUT(
     const { id } = await params;
 
     const body = await request.json();
-    const { ime, firma, email, email2, telefon, telefon2, nacinPlacanja, domen } = body;
+    const { ime, firma, email, email2, telefon, telefon2, nacinPlacanja, domen,
+            pib, maticnibroj, adresa, grad, postanskiBroj } = body;
 
     if (!ime || !email || !telefon) {
       return NextResponse.json(
@@ -62,6 +63,11 @@ export async function PUT(
       telefon2: telefon2 || null,
       nacin_placanja: nacinPlacanja || null,
       domen: domen || null,
+      pib: pib || null,
+      maticni_broj: maticnibroj || null,
+      adresa: adresa || null,
+      grad: grad || null,
+      postanski_broj: postanskiBroj || null,
     });
 
     if (!azuriranKupac) {

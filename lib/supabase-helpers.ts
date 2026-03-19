@@ -17,6 +17,11 @@ export interface Kupac {
   telefon2?: string | null;
   nacin_placanja?: "fiskalni" | "faktura" | null;
   domen?: string | null;
+  pib?: string | null;
+  maticni_broj?: string | null;
+  adresa?: string | null;
+  grad?: string | null;
+  postanski_broj?: string | null;
   arhiviran?: boolean;
   created_at: string;
   updated_at: string;
@@ -48,6 +53,11 @@ export async function getKupci(includeArhivirani = false) {
     telefon2: kupac.telefon2,
     nacinPlacanja: kupac.nacin_placanja,
     domen: kupac.domen,
+    pib: kupac.pib,
+    maticnibroj: kupac.maticni_broj,
+    adresa: kupac.adresa,
+    grad: kupac.grad,
+    postanskiBroj: kupac.postanski_broj,
     arhiviran: kupac.arhiviran,
     created_at: kupac.created_at,
     updated_at: kupac.updated_at,
@@ -74,6 +84,11 @@ export async function getArhiviraniKupci() {
     telefon2: kupac.telefon2,
     nacinPlacanja: kupac.nacin_placanja,
     domen: kupac.domen,
+    pib: kupac.pib,
+    maticnibroj: kupac.maticni_broj,
+    adresa: kupac.adresa,
+    grad: kupac.grad,
+    postanskiBroj: kupac.postanski_broj,
     arhiviran: kupac.arhiviran,
     created_at: kupac.created_at,
     updated_at: kupac.updated_at,
@@ -112,6 +127,11 @@ export async function getKupacById(id: string) {
     telefon2: data.telefon2,
     nacinPlacanja: data.nacin_placanja,
     domen: data.domen,
+    pib: data.pib,
+    maticnibroj: data.maticni_broj,
+    adresa: data.adresa,
+    grad: data.grad,
+    postanskiBroj: data.postanski_broj,
     arhiviran: data.arhiviran,
     created_at: data.created_at,
     updated_at: data.updated_at,
@@ -756,5 +776,258 @@ export async function deleteGoogleAdsNastavak(id: string) {
     .delete()
     .eq("id", id);
 
+  if (error) throw error;
+}
+
+// =====================================================
+// FAKTURE
+// =====================================================
+
+export interface FakturaStavka {
+  id: string;
+  faktura_id: string;
+  naziv: string;
+  jedinica_mere: string;
+  kolicina: number;
+  cena: number;
+  iznos: number;
+  redni_broj: number;
+  created_at: string;
+}
+
+export interface Faktura {
+  id: string;
+  kupac_id: string;
+  broj_fakture: string;
+  datum_izdavanja: string;
+  datum_valute: string;
+  status: "nacrt" | "izdata" | "placena" | "stornirana";
+  napomena?: string | null;
+  ukupan_iznos: number;
+  created_at: string;
+  updated_at: string;
+  stavke?: FakturaStavka[];
+}
+
+function mapKupacForFaktura(kupac: Record<string, unknown>) {
+  return {
+    _id: kupac.id,
+    ime: kupac.ime,
+    firma: kupac.firma,
+    email: kupac.email,
+    telefon: kupac.telefon,
+    pib: kupac.pib,
+    maticnibroj: kupac.maticni_broj,
+    adresa: kupac.adresa,
+    grad: kupac.grad,
+    postanskiBroj: kupac.postanski_broj,
+  };
+}
+
+export async function getFakture(filters?: { kupac_id?: string; status?: string }) {
+  let query = supabase
+    .from("fakture")
+    .select(`
+      *,
+      kupci (*),
+      fakture_stavke (*)
+    `)
+    .order("datum_izdavanja", { ascending: false });
+
+  if (filters?.kupac_id) {
+    query = query.eq("kupac_id", filters.kupac_id);
+  }
+  if (filters?.status) {
+    query = query.eq("status", filters.status);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  return data.map((f) => ({
+    _id: f.id,
+    kupacId: f.kupci ? mapKupacForFaktura(f.kupci as Record<string, unknown>) : null,
+    brojFakture: f.broj_fakture,
+    datumIzdavanja: f.datum_izdavanja,
+    datumValute: f.datum_valute,
+    status: f.status,
+    napomena: f.napomena,
+    ukupanIznos: f.ukupan_iznos,
+    stavke: f.fakture_stavke
+      ? (f.fakture_stavke as FakturaStavka[])
+          .sort((a, b) => a.redni_broj - b.redni_broj)
+          .map((s) => ({
+            _id: s.id,
+            naziv: s.naziv,
+            jedinicaMere: s.jedinica_mere,
+            kolicina: s.kolicina,
+            cena: s.cena,
+            iznos: s.iznos,
+            redniBroj: s.redni_broj,
+          }))
+      : [],
+    createdAt: f.created_at,
+  }));
+}
+
+export async function getFakturaById(id: string) {
+  const { data, error } = await supabase
+    .from("fakture")
+    .select(`
+      *,
+      kupci (*),
+      fakture_stavke (*)
+    `)
+    .eq("id", id)
+    .single();
+
+  if (error) throw error;
+
+  return {
+    _id: data.id,
+    kupacId: data.kupci ? mapKupacForFaktura(data.kupci as Record<string, unknown>) : null,
+    brojFakture: data.broj_fakture,
+    datumIzdavanja: data.datum_izdavanja,
+    datumValute: data.datum_valute,
+    status: data.status,
+    napomena: data.napomena,
+    ukupanIznos: data.ukupan_iznos,
+    stavke: data.fakture_stavke
+      ? (data.fakture_stavke as FakturaStavka[])
+          .sort((a, b) => a.redni_broj - b.redni_broj)
+          .map((s) => ({
+            _id: s.id,
+            naziv: s.naziv,
+            jedinicaMere: s.jedinica_mere,
+            kolicina: s.kolicina,
+            cena: s.cena,
+            iznos: s.iznos,
+            redniBroj: s.redni_broj,
+          }))
+      : [],
+  };
+}
+
+export async function getSledediBrojFakture(): Promise<string> {
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(-2);
+  const prefix = `${yy}-RN001`;
+
+  const { data, error } = await supabase
+    .from("fakture")
+    .select("broj_fakture")
+    .like("broj_fakture", `${prefix}%`);
+
+  if (error) throw error;
+
+  let maxSeq = 0;
+  if (data && data.length > 0) {
+    for (const row of data) {
+      const seq = parseInt(row.broj_fakture.slice(prefix.length), 10);
+      if (!isNaN(seq) && seq > maxSeq) maxSeq = seq;
+    }
+  }
+
+  const nextSeq = maxSeq + 1;
+  return `${prefix}${String(nextSeq).padStart(6, "0")}`;
+}
+
+export async function createFaktura(
+  faktura: Omit<Faktura, "id" | "created_at" | "updated_at" | "stavke">,
+  stavke: Omit<FakturaStavka, "id" | "faktura_id" | "created_at">[]
+) {
+  const { data: fakturaData, error: fakturaError } = await supabase
+    .from("fakture")
+    .insert({
+      kupac_id: faktura.kupac_id,
+      broj_fakture: faktura.broj_fakture,
+      datum_izdavanja: faktura.datum_izdavanja,
+      datum_valute: faktura.datum_valute,
+      status: faktura.status,
+      napomena: faktura.napomena || null,
+      ukupan_iznos: faktura.ukupan_iznos,
+    })
+    .select()
+    .single();
+
+  if (fakturaError) throw fakturaError;
+
+  if (stavke.length > 0) {
+    const stavkeZaInsert = stavke.map((s) => ({
+      faktura_id: fakturaData.id,
+      naziv: s.naziv,
+      jedinica_mere: s.jedinica_mere,
+      kolicina: s.kolicina,
+      cena: s.cena,
+      iznos: s.iznos,
+      redni_broj: s.redni_broj,
+    }));
+
+    const { error: stavkeError } = await supabase
+      .from("fakture_stavke")
+      .insert(stavkeZaInsert);
+
+    if (stavkeError) throw stavkeError;
+  }
+
+  return fakturaData;
+}
+
+export async function updateFaktura(
+  id: string,
+  faktura: Partial<Omit<Faktura, "id" | "created_at" | "updated_at" | "stavke">>,
+  stavke?: Omit<FakturaStavka, "id" | "faktura_id" | "created_at">[]
+) {
+  const updateData: Record<string, unknown> = {};
+  if (faktura.kupac_id !== undefined) updateData.kupac_id = faktura.kupac_id;
+  if (faktura.datum_izdavanja !== undefined) updateData.datum_izdavanja = faktura.datum_izdavanja;
+  if (faktura.datum_valute !== undefined) updateData.datum_valute = faktura.datum_valute;
+  if (faktura.status !== undefined) updateData.status = faktura.status;
+  if (faktura.napomena !== undefined) updateData.napomena = faktura.napomena || null;
+  if (faktura.ukupan_iznos !== undefined) updateData.ukupan_iznos = faktura.ukupan_iznos;
+
+  const { data, error } = await supabase
+    .from("fakture")
+    .update(updateData)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  if (stavke !== undefined) {
+    // Obriši postojeće stavke i dodaj nove
+    const { error: deleteError } = await supabase
+      .from("fakture_stavke")
+      .delete()
+      .eq("faktura_id", id);
+
+    if (deleteError) throw deleteError;
+
+    if (stavke.length > 0) {
+      const stavkeZaInsert = stavke.map((s) => ({
+        faktura_id: id,
+        naziv: s.naziv,
+        jedinica_mere: s.jedinica_mere,
+        kolicina: s.kolicina,
+        cena: s.cena,
+        iznos: s.iznos,
+        redni_broj: s.redni_broj,
+      }));
+
+      const { error: stavkeError } = await supabase
+        .from("fakture_stavke")
+        .insert(stavkeZaInsert);
+
+      if (stavkeError) throw stavkeError;
+    }
+  }
+
+  return data;
+}
+
+export async function deleteFaktura(id: string) {
+  // Stavke se automatski brišu CASCADE
+  const { error } = await supabase.from("fakture").delete().eq("id", id);
   if (error) throw error;
 }

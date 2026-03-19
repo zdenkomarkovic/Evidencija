@@ -88,7 +88,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log('Request body:', body);
 
-    const { ime, firma, email, email2, telefon, telefon2, nacinPlacanja, domen } = body;
+    const { ime, firma, email, email2, telefon, telefon2, nacinPlacanja, domen,
+            pib, maticnibroj, adresa, grad, postanskiBroj } = body;
 
     if (!ime || !email || !telefon) {
       return NextResponse.json(
@@ -113,6 +114,11 @@ export async function POST(request: NextRequest) {
       telefon2: telefon2 || null,
       nacin_placanja: nacinPlacanja || null,
       domen: domen || null,
+      pib: pib || null,
+      maticni_broj: maticnibroj || null,
+      adresa: adresa || null,
+      grad: grad || null,
+      postanski_broj: postanskiBroj || null,
     });
 
     console.log('Kupac kreiran:', noviKupac.id);

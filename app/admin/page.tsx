@@ -16,6 +16,9 @@ import IzmeniHostingModal from "@/components/admin/IzmeniHostingModal";
 import IzmeniGoogleAdsModal from "@/components/admin/IzmeniGoogleAdsModal";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import KupacDetaljiModal from "@/components/admin/KupacDetaljiModal";
+import FaktureTabela, { Faktura } from "@/components/admin/FaktureTabela";
+import DodajFakturuModal from "@/components/admin/DodajFakturuModal";
+import IzmeniFaktureModal from "@/components/admin/IzmeniFaktureModal";
 
 interface Kupac {
   _id: string;
@@ -103,8 +106,14 @@ export default function AdminPage() {
   const [arhiviraneKampanje, setArhiviraneKampanje] = useState<GoogleAds[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    "kupci" | "rate" | "hosting" | "googleads" | "arhivirani"
+    "kupci" | "rate" | "hosting" | "googleads" | "fakture" | "arhivirani"
   >("kupci");
+
+  // Fakture state
+  const [fakture, setFakture] = useState<Faktura[]>([]);
+  const [fakturaModalOpen, setFakturaModalOpen] = useState(false);
+  const [izmeniFaktureModalOpen, setIzmeniFaktureModalOpen] = useState(false);
+  const [izabranjaFaktura, setIzabranjaFaktura] = useState<Faktura | null>(null);
 
   // Limit za prikaz kupaca
   const [kupciLimit, setKupciLimit] = useState(25);
@@ -168,17 +177,19 @@ export default function AdminPage() {
     try {
       // Učitaj SVE kupce odjednom za client-side pretragu
       const kupciUrl = `/api/kupci?page=1&limit=10000`;
-      const [kupciRes, rateRes, hostingRes, kampanjeRes] = await Promise.all([
+      const [kupciRes, rateRes, hostingRes, kampanjeRes, faktureRes] = await Promise.all([
         fetch(kupciUrl),
         fetch("/api/rate"),
         fetch("/api/hosting"),
         fetch("/api/google-ads"),
+        fetch("/api/fakture"),
       ]);
 
       const kupciData = await kupciRes.json();
       const rateData = await rateRes.json();
       const hostingData = await hostingRes.json();
       const kampanjeData = await kampanjeRes.json();
+      const faktureData = await faktureRes.json();
 
       // Proveri da li kupciData ima paginaciju
       if (kupciData.data && kupciData.pagination) {
@@ -192,6 +203,7 @@ export default function AdminPage() {
       setRate(Array.isArray(rateData) ? rateData : []);
       setHosting(Array.isArray(hostingData) ? hostingData : []);
       setKampanje(Array.isArray(kampanjeData) ? kampanjeData : []);
+      setFakture(Array.isArray(faktureData) ? faktureData : []);
     } catch (error) {
       console.error("Greška pri učitavanju podataka:", error);
       // Postavi prazne nizove u slučaju greške
@@ -199,6 +211,7 @@ export default function AdminPage() {
       setRate([]);
       setHosting([]);
       setKampanje([]);
+      setFakture([]);
     } finally {
       setLoading(false);
     }
@@ -455,6 +468,47 @@ export default function AdminPage() {
       } else {
         console.error("Greška pri ažuriranju statusa kampanje");
       }
+    } catch (error) {
+      console.error("Greška:", error);
+    }
+  };
+
+  // Fakture handlers
+  const handleEditFaktura = (faktura: Faktura) => {
+    setIzabranjaFaktura(faktura);
+    setIzmeniFaktureModalOpen(true);
+  };
+
+  const handleDeleteFaktura = (fakturaId: string) => {
+    setConfirmDialogConfig({
+      title: "Obriši fakturu",
+      message: "Da li ste sigurni da želite da obrišete ovu fakturu?",
+      onConfirm: async () => {
+        setDeleteLoading(true);
+        try {
+          const res = await fetch(`/api/fakture/${fakturaId}`, { method: "DELETE" });
+          if (res.ok) {
+            ucitajPodatke();
+            setConfirmDialogOpen(false);
+          }
+        } catch (error) {
+          console.error("Greška:", error);
+        } finally {
+          setDeleteLoading(false);
+        }
+      },
+    });
+    setConfirmDialogOpen(true);
+  };
+
+  const handleOznaciPlacenuFakturu = async (fakturaId: string) => {
+    try {
+      const res = await fetch(`/api/fakture/${fakturaId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "placena" }),
+      });
+      if (res.ok) ucitajPodatke();
     } catch (error) {
       console.error("Greška:", error);
     }
@@ -727,6 +781,14 @@ export default function AdminPage() {
                 + Dodaj Google Ads Kampanju
               </button>
             )}
+            {activeTab === "fakture" && (
+              <button
+                onClick={() => setFakturaModalOpen(true)}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm sm:text-base"
+              >
+                + Nova Faktura
+              </button>
+            )}
           </div>
 
           {/* Tabovi sa horizontal scroll */}
@@ -771,6 +833,16 @@ export default function AdminPage() {
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
               >
                 Google Ads ({kampanje?.length || 0})
+              </button>
+              <button
+                onClick={() => setActiveTab("fakture")}
+                className={`${
+                  activeTab === "fakture"
+                    ? "border-indigo-500 text-indigo-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+              >
+                Fakture ({fakture?.length || 0})
               </button>
               <button
                 onClick={() => setActiveTab("arhivirani")}
@@ -831,6 +903,14 @@ export default function AdminPage() {
               onPonistiPlacenoNastavak={ponistiPlacenoNastavakGoogleAds}
               onToggleAktivna={toggleAktivnaGoogleAds}
               onKupacKlik={handleKupacKlik}
+            />
+          )}
+          {activeTab === "fakture" && (
+            <FaktureTabela
+              fakture={fakture}
+              onEdit={handleEditFaktura}
+              onDelete={handleDeleteFaktura}
+              onOznaciPlacenu={handleOznaciPlacenuFakturu}
             />
           )}
           {activeTab === "arhivirani" && (
@@ -935,6 +1015,20 @@ export default function AdminPage() {
           isOpen={googleAdsModalOpen}
           onClose={() => setGoogleAdsModalOpen(false)}
           onSuccess={ucitajPodatke}
+          kupci={kupci}
+        />
+
+        <DodajFakturuModal
+          isOpen={fakturaModalOpen}
+          onClose={() => setFakturaModalOpen(false)}
+          onSuccess={ucitajPodatke}
+          kupci={kupci}
+        />
+        <IzmeniFaktureModal
+          isOpen={izmeniFaktureModalOpen}
+          onClose={() => setIzmeniFaktureModalOpen(false)}
+          onSuccess={ucitajPodatke}
+          faktura={izabranjaFaktura}
           kupci={kupci}
         />
 

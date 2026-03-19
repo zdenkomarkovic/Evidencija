@@ -12,6 +12,11 @@ interface Kupac {
   telefon2?: string;
   nacinPlacanja?: 'fiskalni' | 'faktura';
   domen?: string;
+  pib?: string;
+  maticnibroj?: string;
+  adresa?: string;
+  grad?: string;
+  postanskiBroj?: string;
 }
 
 interface IzmeniKupcaModalProps {
@@ -35,6 +40,11 @@ export default function IzmeniKupcaModal({
   const [telefon2, setTelefon2] = useState('');
   const [nacinPlacanja, setNacinPlacanja] = useState<'fiskalni' | 'faktura'>('fiskalni');
   const [domen, setDomen] = useState('');
+  const [pib, setPib] = useState('');
+  const [maticnibroj, setMaticnibroj] = useState('');
+  const [adresa, setAdresa] = useState('');
+  const [grad, setGrad] = useState('');
+  const [postanskiBroj, setPostanskiBroj] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -48,6 +58,11 @@ export default function IzmeniKupcaModal({
       setTelefon2(kupac.telefon2 || '');
       setNacinPlacanja(kupac.nacinPlacanja || 'fiskalni');
       setDomen(kupac.domen || '');
+      setPib(kupac.pib || '');
+      setMaticnibroj(kupac.maticnibroj || '');
+      setAdresa(kupac.adresa || '');
+      setGrad(kupac.grad || '');
+      setPostanskiBroj(kupac.postanskiBroj || '');
     }
   }, [kupac]);
 
@@ -62,7 +77,14 @@ export default function IzmeniKupcaModal({
       const res = await fetch(`/api/kupci/${kupac._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ime, firma, email, email2, telefon, telefon2, nacinPlacanja, domen }),
+        body: JSON.stringify({
+          ime, firma, email, email2, telefon, telefon2, nacinPlacanja, domen,
+          pib: pib || null,
+          maticnibroj: maticnibroj || null,
+          adresa: adresa || null,
+          grad: grad || null,
+          postanskiBroj: postanskiBroj || null,
+        }),
       });
 
       const data = await res.json();
@@ -207,7 +229,7 @@ export default function IzmeniKupcaModal({
             </div>
           </div>
 
-          <div className="mb-6">
+          <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Domen (opciono)
             </label>
@@ -219,6 +241,67 @@ export default function IzmeniKupcaModal({
               placeholder="www.example.com"
             />
           </div>
+
+          {/* Podaci za fakturisanje */}
+          {nacinPlacanja === 'faktura' && (
+            <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h4 className="text-sm font-semibold text-blue-800 mb-3">
+                Podaci za fakturisanje (pravno lice)
+              </h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">PIB</label>
+                  <input
+                    type="text"
+                    value={pib}
+                    onChange={(e) => setPib(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    placeholder="123456789"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Matični broj</label>
+                  <input
+                    type="text"
+                    value={maticnibroj}
+                    onChange={(e) => setMaticnibroj(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    placeholder="12345678"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Adresa</label>
+                  <input
+                    type="text"
+                    value={adresa}
+                    onChange={(e) => setAdresa(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    placeholder="Ulica i broj 1"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Grad</label>
+                  <input
+                    type="text"
+                    value={grad}
+                    onChange={(e) => setGrad(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    placeholder="Beograd"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Poštanski broj</label>
+                  <input
+                    type="text"
+                    value={postanskiBroj}
+                    onChange={(e) => setPostanskiBroj(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    placeholder="11000"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex gap-3">
             <button
