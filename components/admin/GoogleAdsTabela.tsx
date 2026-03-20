@@ -9,6 +9,13 @@ interface Kupac {
   _id: string;
   ime: string;
   email: string;
+  nacinPlacanja?: string | null;
+}
+
+function borderKupca(nacinPlacanja?: string | null) {
+  if (nacinPlacanja === 'faktura') return 'border-l-4 border-l-green-400';
+  if (nacinPlacanja === 'kes') return 'border-l-4 border-l-amber-400';
+  return 'border-l-4 border-l-blue-300';
 }
 
 interface Nastavak {
@@ -575,16 +582,16 @@ export default function GoogleAdsTabela({
                   key={`${kampanja._id}-${izabraniMesec}`}
                   className={`hover:bg-gray-50 transition-colors ${
                     imaNeplacene
-                      ? 'bg-red-50 border-l-4 border-red-500'
+                      ? 'bg-red-50 border-l-4 border-l-red-500'
                       : !kampanja.aktivna
-                      ? 'bg-gray-100 opacity-75'
+                      ? 'bg-gray-100 opacity-75 ' + borderKupca(kampanja.kupacId?.nacinPlacanja)
                       : !period.placeno && dana < 0
-                      ? 'bg-red-100 border-l-4 border-red-600'
+                      ? 'bg-red-100 border-l-4 border-l-red-600'
                       : !period.placeno && dana <= 7
-                      ? 'bg-red-50'
+                      ? 'bg-red-50 ' + borderKupca(kampanja.kupacId?.nacinPlacanja)
                       : !period.placeno && dana <= 14
-                      ? 'bg-yellow-50'
-                      : ''
+                      ? 'bg-yellow-50 ' + borderKupca(kampanja.kupacId?.nacinPlacanja)
+                      : borderKupca(kampanja.kupacId?.nacinPlacanja)
                   }`}
                 >
                   <td className="px-4 py-4 whitespace-nowrap">

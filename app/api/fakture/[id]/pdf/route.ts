@@ -1,33 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFakturaById } from '@/lib/supabase-helpers';
 import React from 'react';
-import { renderToBuffer, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { renderToBuffer, Document, Page, Text, View, Image, StyleSheet, Font } from '@react-pdf/renderer';
+import fs from 'fs';
+
+Font.register({
+  family: 'Arial',
+  fonts: [
+    { src: 'C:/Windows/Fonts/arial.ttf', fontWeight: 'normal' },
+    { src: 'C:/Windows/Fonts/arialbd.ttf', fontWeight: 'bold' },
+  ],
+});
 
 const styles = StyleSheet.create({
   page: {
-    fontFamily: 'Helvetica',
-    fontSize: 10,
-    padding: 40,
+    fontFamily: 'Arial',
+    fontSize: 9,
+    padding: 30,
     backgroundColor: '#ffffff',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 30,
+    marginBottom: 20,
     borderBottom: '2pt solid #1a1a2e',
-    paddingBottom: 15,
+    paddingBottom: 12,
   },
   firmaBlok: {
     flex: 1,
   },
+  logo: {
+    width: 60,
+    height: 60,
+    marginBottom: 6,
+    objectFit: 'contain',
+  },
   firmaNaziv: {
-    fontSize: 14,
-    fontFamily: 'Helvetica-Bold',
-    marginBottom: 4,
+    fontSize: 13,
+    fontWeight: 'bold',
+    marginBottom: 3,
     color: '#1a1a2e',
   },
   firmaPodaci: {
-    fontSize: 9,
+    fontSize: 8,
     color: '#444',
     marginBottom: 2,
   },
@@ -36,158 +51,206 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   naslov: {
-    fontSize: 18,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 16,
+    fontWeight: 'bold',
     color: '#1a1a2e',
-    marginBottom: 6,
+    marginBottom: 5,
   },
   brojFakture: {
-    fontSize: 11,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 10,
+    fontWeight: 'bold',
     color: '#2563eb',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   datumPodaci: {
-    fontSize: 9,
+    fontSize: 8,
     color: '#444',
     marginBottom: 2,
   },
   kupacSekcija: {
     flexDirection: 'row',
-    marginBottom: 25,
+    marginBottom: 18,
     gap: 20,
   },
   kupacBlok: {
     flex: 1,
     backgroundColor: '#f8f9fa',
-    padding: 12,
+    padding: 10,
     borderRadius: 4,
   },
   kupacNaslov: {
-    fontSize: 8,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 7,
+    fontWeight: 'bold',
     color: '#666',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginBottom: 6,
+    marginBottom: 5,
   },
   kupacNaziv: {
-    fontSize: 11,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 10,
+    fontWeight: 'bold',
     color: '#1a1a2e',
     marginBottom: 3,
   },
   kupacPodaci: {
-    fontSize: 9,
+    fontSize: 8,
     color: '#444',
     marginBottom: 2,
   },
+  // TABELA
   tabela: {
-    marginBottom: 20,
+    marginBottom: 15,
   },
   tabelaHeader: {
     flexDirection: 'row',
     backgroundColor: '#1a1a2e',
-    padding: 8,
+    padding: '5 4',
     borderRadius: 2,
   },
   tabelaHeaderText: {
     color: '#ffffff',
-    fontSize: 9,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 6.5,
+    fontWeight: 'bold',
   },
   tabelaRed: {
     flexDirection: 'row',
     borderBottom: '0.5pt solid #e5e7eb',
-    padding: '6 8',
+    padding: '4 4',
   },
   tabelaRedSivi: {
     flexDirection: 'row',
     backgroundColor: '#f9fafb',
     borderBottom: '0.5pt solid #e5e7eb',
-    padding: '6 8',
+    padding: '4 4',
   },
   tabelaCell: {
-    fontSize: 9,
+    fontSize: 7,
     color: '#333',
   },
-  colRb: { width: '5%' },
-  colNaziv: { width: '45%' },
-  colJm: { width: '10%' },
-  colKol: { width: '10%', textAlign: 'right' },
-  colCena: { width: '15%', textAlign: 'right' },
-  colIznos: { width: '15%', textAlign: 'right' },
-  ukupnoSekcija: {
+  // Kolone tabele - redosled: Rb | Sifra | Naziv | KOL | Cena bez PDV | Iznos PDV | Vrednost sa PDV | % | Rabat | Barkod | JM | PDV
+  colRb:            { width: '3.5%' },
+  colSifra:         { width: '7%' },
+  colNaziv:         { width: '20%' },
+  colKol:           { width: '6%', textAlign: 'right' },
+  colCenaBezPdv:    { width: '11%', textAlign: 'right' },
+  colIznosPdv:      { width: '9%', textAlign: 'right' },
+  colVrednostSaPdv: { width: '12%', textAlign: 'right' },
+  colPdvProc:       { width: '4%', textAlign: 'right' },
+  colRabat:         { width: '8%', textAlign: 'right' },
+  colBarkod:        { width: '9%' },
+  colJm:            { width: '4.5%' },
+  colPdv:           { width: '6%' },
+  // SPECIFIKACIJA POREZA
+  specSekcija: {
+    marginBottom: 15,
+  },
+  specNaslov: {
+    fontSize: 8,
+    fontWeight: 'bold',
+    color: '#1a1a2e',
+    marginBottom: 5,
+    textTransform: 'uppercase',
+  },
+  specHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#e5e7eb',
+    padding: '4 6',
+  },
+  specRed: {
+    flexDirection: 'row',
+    borderBottom: '0.5pt solid #e5e7eb',
+    padding: '4 6',
+  },
+  specHeaderText: {
+    fontSize: 7,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  specCell: {
+    fontSize: 7,
+    color: '#333',
+  },
+  specColDatum:   { width: '13%' },
+  specColBroj:    { width: '18%' },
+  specColIznos:   { width: '14%', textAlign: 'right' },
+  specColOsnov20: { width: '14%', textAlign: 'right' },
+  specColPdv20:   { width: '14%', textAlign: 'right' },
+  specColOsnov10: { width: '13%', textAlign: 'right' },
+  specColPdv10:   { width: '14%', textAlign: 'right' },
+  // SUMA
+  sumaSekcija: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginBottom: 20,
+    marginBottom: 15,
   },
-  ukupnoBlok: {
-    width: '35%',
+  sumaBlok: {
+    width: '40%',
+    borderTop: '1pt solid #e5e7eb',
   },
-  ukupnoRed: {
+  sumaRed: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: '5 8',
+    padding: '4 8',
     borderBottom: '0.5pt solid #e5e7eb',
   },
-  ukupnoRedZavrsni: {
+  sumaLabel: {
+    fontSize: 8,
+    color: '#555',
+  },
+  sumaVrednost: {
+    fontSize: 8,
+    color: '#333',
+    fontWeight: 'bold',
+  },
+  sumaUkupnoRed: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: '8',
+    padding: '7 8',
     backgroundColor: '#1a1a2e',
     borderRadius: 2,
+    marginTop: 4,
   },
-  ukupnoLabel: {
+  sumaUkupnoLabel: {
     fontSize: 9,
-    color: '#666',
+    color: '#ffffff',
+    fontWeight: 'bold',
   },
-  ukupnoVrednost: {
-    fontSize: 9,
-    color: '#333',
-    fontFamily: 'Helvetica-Bold',
-  },
-  ukupnoZavrsniLabel: {
+  sumaUkupnoVrednost: {
     fontSize: 10,
     color: '#ffffff',
-    fontFamily: 'Helvetica-Bold',
-  },
-  ukupnoZavrsniVrednost: {
-    fontSize: 11,
-    color: '#ffffff',
-    fontFamily: 'Helvetica-Bold',
+    fontWeight: 'bold',
   },
   napomenaBlok: {
-    marginBottom: 30,
-    padding: 10,
+    marginBottom: 20,
+    padding: 8,
     backgroundColor: '#fffbeb',
     borderLeft: '3pt solid #f59e0b',
     borderRadius: 2,
   },
   napomenaNaslov: {
-    fontSize: 9,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 8,
+    fontWeight: 'bold',
     color: '#92400e',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   napomenaText: {
-    fontSize: 9,
+    fontSize: 8,
     color: '#78350f',
   },
   pdvNapomena: {
-    marginBottom: 20,
-    padding: 8,
+    marginBottom: 15,
+    padding: 7,
     backgroundColor: '#f0fdf4',
     borderLeft: '3pt solid #16a34a',
   },
   pdvText: {
-    fontSize: 8,
+    fontSize: 7.5,
     color: '#166534',
   },
   footer: {
     marginTop: 'auto',
     borderTop: '1pt solid #e5e7eb',
-    paddingTop: 15,
+    paddingTop: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
@@ -201,21 +264,21 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   footerLabel: {
-    fontSize: 8,
+    fontSize: 7.5,
     color: '#666',
   },
   racunBlok: {
-    marginBottom: 15,
+    marginBottom: 12,
   },
   racunNaslov: {
-    fontSize: 8,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 7.5,
+    fontWeight: 'bold',
     color: '#666',
     textTransform: 'uppercase',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   racunText: {
-    fontSize: 9,
+    fontSize: 8,
     color: '#333',
     marginBottom: 1,
   },
@@ -238,6 +301,11 @@ export async function GET(
     const { id } = await params;
     const faktura = await getFakturaById(id);
 
+    const logoPath = 'c:\\Users\\DELL\\Pictures\\ChatGPT Image Oct 26, 2025, 02_32_36 AM.png';
+    const logoBase64 = fs.existsSync(logoPath)
+      ? `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}`
+      : null;
+
     const firma = {
       naziv: process.env.FIRMA_NAZIV || 'Vaša Firma d.o.o.',
       pib: process.env.FIRMA_PIB || '123456789',
@@ -249,6 +317,7 @@ export async function GET(
       racun2: process.env.FIRMA_ZIRO_RACUN_2 || '',
       banka2: process.env.FIRMA_BANKA_2 || '',
       mestoIzdavanja: process.env.FIRMA_MESTO_IZDAVANJA || 'Beograd',
+      telefon: process.env.FIRMA_TELEFON || '',
     };
 
     const kupac = faktura.kupacId as {
@@ -269,7 +338,19 @@ export async function GET(
       cena: number;
       iznos: number;
       redniBroj: number;
+      sifra?: string;
+      pdvStopa?: number;
+      rabat?: number;
+      barkod?: string;
     }[];
+
+    // Izracunavanja za sumu
+    const ukupnoBezPdv = stavke.reduce((sum, s) => sum + s.iznos, 0);
+    const ukupnoIznosPdv = stavke.reduce((sum, s) => {
+      const stopa = s.pdvStopa || 0;
+      return sum + (s.iznos * stopa / 100);
+    }, 0);
+    const ukupnoRabat = stavke.reduce((sum, s) => sum + (s.rabat || 0), 0);
 
     const doc = React.createElement(
       Document,
@@ -285,10 +366,13 @@ export async function GET(
           React.createElement(
             View,
             { style: styles.firmaBlok },
+            logoBase64 ? React.createElement(Image, { style: styles.logo, src: logoBase64 }) : null,
             React.createElement(Text, { style: styles.firmaNaziv }, firma.naziv),
             React.createElement(Text, { style: styles.firmaPodaci }, firma.adresa),
             React.createElement(Text, { style: styles.firmaPodaci }, firma.grad),
-            React.createElement(Text, { style: styles.firmaPodaci }, `PIB: ${firma.pib}  |  Mat. br.: ${firma.maticniBroj}`)
+            React.createElement(Text, { style: styles.firmaPodaci }, `PIB: ${firma.pib}  |  Mat. br.: ${firma.maticniBroj}`),
+            firma.telefon ? React.createElement(Text, { style: styles.firmaPodaci }, `Tel: ${firma.telefon}`) : null,
+            firma.racun1 ? React.createElement(Text, { style: styles.firmaPodaci }, `Racun: ${firma.racun1}${firma.banka1 ? ` (${firma.banka1})` : ''}`) : null
           ),
           React.createElement(
             View,
@@ -301,26 +385,15 @@ export async function GET(
           )
         ),
 
-        // PRODAVAC / KUPAC
+        // PRIMALAC RACUNA
         React.createElement(
           View,
           { style: styles.kupacSekcija },
           React.createElement(
             View,
             { style: styles.kupacBlok },
-            React.createElement(Text, { style: styles.kupacNaslov }, 'PRODAVAC'),
-            React.createElement(Text, { style: styles.kupacNaziv }, firma.naziv),
-            React.createElement(Text, { style: styles.kupacPodaci }, firma.adresa),
-            React.createElement(Text, { style: styles.kupacPodaci }, firma.grad),
-            React.createElement(Text, { style: styles.kupacPodaci }, `PIB: ${firma.pib}`),
-            React.createElement(Text, { style: styles.kupacPodaci }, `Mat. br.: ${firma.maticniBroj}`)
-          ),
-          React.createElement(
-            View,
-            { style: styles.kupacBlok },
-            React.createElement(Text, { style: styles.kupacNaslov }, 'KUPAC'),
+            React.createElement(Text, { style: styles.kupacNaslov }, 'PRIMALAC RACUNA'),
             React.createElement(Text, { style: styles.kupacNaziv }, kupac?.firma || kupac?.ime || ''),
-            kupac?.firma ? React.createElement(Text, { style: styles.kupacPodaci }, `Kontakt: ${kupac.ime}`) : null,
             kupac?.adresa ? React.createElement(Text, { style: styles.kupacPodaci }, kupac.adresa) : null,
             (kupac?.postanskiBroj || kupac?.grad)
               ? React.createElement(Text, { style: styles.kupacPodaci }, `${kupac?.postanskiBroj || ''} ${kupac?.grad || ''}`.trim())
@@ -334,44 +407,110 @@ export async function GET(
         React.createElement(
           View,
           { style: styles.tabela },
-          // Header
           React.createElement(
             View,
             { style: styles.tabelaHeader },
             React.createElement(Text, { style: [styles.tabelaHeaderText, styles.colRb] }, 'Rb.'),
-            React.createElement(Text, { style: [styles.tabelaHeaderText, styles.colNaziv] }, 'Naziv robe/usluge'),
-            React.createElement(Text, { style: [styles.tabelaHeaderText, styles.colJm] }, 'J.m.'),
-            React.createElement(Text, { style: [styles.tabelaHeaderText, styles.colKol] }, 'Kol.'),
-            React.createElement(Text, { style: [styles.tabelaHeaderText, styles.colCena] }, 'Cena (RSD)'),
-            React.createElement(Text, { style: [styles.tabelaHeaderText, styles.colIznos] }, 'Iznos (RSD)')
+            React.createElement(Text, { style: [styles.tabelaHeaderText, styles.colSifra] }, 'Sifra'),
+            React.createElement(Text, { style: [styles.tabelaHeaderText, styles.colNaziv] }, 'Naziv artikla'),
+            React.createElement(Text, { style: [styles.tabelaHeaderText, styles.colKol] }, 'KOL'),
+            React.createElement(Text, { style: [styles.tabelaHeaderText, styles.colCenaBezPdv] }, 'Cena bez PDV'),
+            React.createElement(Text, { style: [styles.tabelaHeaderText, styles.colIznosPdv] }, 'Iznos PDV'),
+            React.createElement(Text, { style: [styles.tabelaHeaderText, styles.colVrednostSaPdv] }, 'Vrednost sa PDV'),
+            React.createElement(Text, { style: [styles.tabelaHeaderText, styles.colPdvProc] }, '%'),
+            React.createElement(Text, { style: [styles.tabelaHeaderText, styles.colRabat] }, 'Rabat'),
+            React.createElement(Text, { style: [styles.tabelaHeaderText, styles.colBarkod] }, 'Barkod'),
+            React.createElement(Text, { style: [styles.tabelaHeaderText, styles.colJm] }, 'JM'),
+            React.createElement(Text, { style: [styles.tabelaHeaderText, styles.colPdv] }, 'PDV')
           ),
-          // Stavke
-          ...stavke.map((s, idx) =>
-            React.createElement(
+          ...stavke.map((s, idx) => {
+            const stopa = s.pdvStopa || 0;
+            const iznosPdv = s.iznos * stopa / 100;
+            const vrednostSaPdv = s.iznos + iznosPdv;
+            return React.createElement(
               View,
               { key: s._id, style: idx % 2 === 0 ? styles.tabelaRed : styles.tabelaRedSivi },
-              React.createElement(Text, { style: [styles.tabelaCell, styles.colRb] }, String(s.redniBroj)),
+              React.createElement(Text, { style: [styles.tabelaCell, styles.colRb] }, `${s.redniBroj}.`),
+              React.createElement(Text, { style: [styles.tabelaCell, styles.colSifra] }, s.sifra || ''),
               React.createElement(Text, { style: [styles.tabelaCell, styles.colNaziv] }, s.naziv),
+              React.createElement(Text, { style: [styles.tabelaCell, styles.colKol] }, formatIznos(s.kolicina)),
+              React.createElement(Text, { style: [styles.tabelaCell, styles.colCenaBezPdv] }, formatIznos(s.cena)),
+              React.createElement(Text, { style: [styles.tabelaCell, styles.colIznosPdv] }, formatIznos(iznosPdv)),
+              React.createElement(Text, { style: [styles.tabelaCell, styles.colVrednostSaPdv] }, formatIznos(vrednostSaPdv)),
+              React.createElement(Text, { style: [styles.tabelaCell, styles.colPdvProc] }, `${stopa}%`),
+              React.createElement(Text, { style: [styles.tabelaCell, styles.colRabat] }, formatIznos(s.rabat || 0)),
+              React.createElement(Text, { style: [styles.tabelaCell, styles.colBarkod] }, s.barkod || ''),
               React.createElement(Text, { style: [styles.tabelaCell, styles.colJm] }, s.jedinicaMere),
-              React.createElement(Text, { style: [styles.tabelaCell, styles.colKol] }, String(s.kolicina)),
-              React.createElement(Text, { style: [styles.tabelaCell, styles.colCena] }, formatIznos(s.cena)),
-              React.createElement(Text, { style: [styles.tabelaCell, styles.colIznos] }, formatIznos(s.iznos))
-            )
+              React.createElement(Text, { style: [styles.tabelaCell, styles.colPdv] }, '')
+            );
+          })
+        ),
+
+        // SPECIFIKACIJA POREZA
+        React.createElement(
+          View,
+          { style: styles.specSekcija },
+          React.createElement(Text, { style: styles.specNaslov }, 'Specifikacija poreza'),
+          React.createElement(
+            View,
+            { style: styles.specHeader },
+            React.createElement(Text, { style: [styles.specHeaderText, styles.specColDatum] }, 'Datum'),
+            React.createElement(Text, { style: [styles.specHeaderText, styles.specColBroj] }, 'Broj racuna'),
+            React.createElement(Text, { style: [styles.specHeaderText, styles.specColIznos] }, 'Iznos'),
+            React.createElement(Text, { style: [styles.specHeaderText, styles.specColOsnov20] }, 'Osnovica 20%'),
+            React.createElement(Text, { style: [styles.specHeaderText, styles.specColPdv20] }, 'Iznos 20%'),
+            React.createElement(Text, { style: [styles.specHeaderText, styles.specColOsnov10] }, 'Osnovica 10%'),
+            React.createElement(Text, { style: [styles.specHeaderText, styles.specColPdv10] }, 'Iznos 10%')
+          ),
+          React.createElement(
+            View,
+            { style: styles.specRed },
+            React.createElement(Text, { style: [styles.specCell, styles.specColDatum] }, formatDatum(faktura.datumIzdavanja)),
+            React.createElement(Text, { style: [styles.specCell, styles.specColBroj] }, faktura.brojFakture),
+            React.createElement(Text, { style: [styles.specCell, styles.specColIznos] }, formatIznos(faktura.ukupanIznos)),
+            React.createElement(Text, { style: [styles.specCell, styles.specColOsnov20] }, formatIznos(0)),
+            React.createElement(Text, { style: [styles.specCell, styles.specColPdv20] }, formatIznos(0)),
+            React.createElement(Text, { style: [styles.specCell, styles.specColOsnov10] }, formatIznos(0)),
+            React.createElement(Text, { style: [styles.specCell, styles.specColPdv10] }, formatIznos(0))
           )
         ),
 
-        // UKUPNO
+        // SUMA
         React.createElement(
           View,
-          { style: styles.ukupnoSekcija },
+          { style: styles.sumaSekcija },
           React.createElement(
             View,
-            { style: styles.ukupnoBlok },
+            { style: styles.sumaBlok },
             React.createElement(
               View,
-              { style: styles.ukupnoRedZavrsni },
-              React.createElement(Text, { style: styles.ukupnoZavrsniLabel }, 'UKUPNO ZA UPLATU:'),
-              React.createElement(Text, { style: styles.ukupnoZavrsniVrednost }, `${formatIznos(faktura.ukupanIznos)} RSD`)
+              { style: styles.sumaRed },
+              React.createElement(Text, { style: styles.sumaLabel }, 'Vrednost bez PDV:'),
+              React.createElement(Text, { style: styles.sumaVrednost }, `${formatIznos(ukupnoBezPdv)} RSD`)
+            ),
+            React.createElement(
+              View,
+              { style: styles.sumaRed },
+              React.createElement(Text, { style: styles.sumaLabel }, 'Iznos PDV:'),
+              React.createElement(Text, { style: styles.sumaVrednost }, `${formatIznos(ukupnoIznosPdv)} RSD`)
+            ),
+            React.createElement(
+              View,
+              { style: styles.sumaRed },
+              React.createElement(Text, { style: styles.sumaLabel }, 'Vrednost sa PDV:'),
+              React.createElement(Text, { style: styles.sumaVrednost }, `${formatIznos(faktura.ukupanIznos)} RSD`)
+            ),
+            React.createElement(
+              View,
+              { style: styles.sumaRed },
+              React.createElement(Text, { style: styles.sumaLabel }, 'Rabat:'),
+              React.createElement(Text, { style: styles.sumaVrednost }, `${formatIznos(ukupnoRabat)} RSD`)
+            ),
+            React.createElement(
+              View,
+              { style: styles.sumaUkupnoRed },
+              React.createElement(Text, { style: styles.sumaUkupnoLabel }, 'UKUPAN IZNOS ZA UPLATU:'),
+              React.createElement(Text, { style: styles.sumaUkupnoVrednost }, `${formatIznos(faktura.ukupanIznos)} RSD`)
             )
           )
         ),
@@ -423,7 +562,7 @@ export async function GET(
             View,
             { style: styles.footerBlok },
             React.createElement(View, { style: styles.footerLinija }),
-            React.createElement(Text, { style: styles.footerLabel }, 'Ovlasceno lice prodavca')
+            React.createElement(Text, { style: styles.footerLabel }, 'Primio/la')
           )
         )
       )

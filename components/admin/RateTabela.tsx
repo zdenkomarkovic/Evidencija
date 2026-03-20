@@ -6,6 +6,13 @@ interface Kupac {
   _id: string;
   ime: string;
   email: string;
+  nacinPlacanja?: string | null;
+}
+
+function borderKupca(nacinPlacanja?: string | null) {
+  if (nacinPlacanja === 'faktura') return 'border-l-4 border-l-green-400';
+  if (nacinPlacanja === 'kes') return 'border-l-4 border-l-amber-400';
+  return 'border-l-4 border-l-blue-300';
 }
 
 interface Rata {
@@ -244,7 +251,7 @@ export default function RateTabela({
             {filtriraneRate.map((rata, index) => (
               <tr
                 key={rata._id}
-                className={`hover:bg-gray-50 transition-colors ${
+                className={`hover:bg-gray-50 transition-colors ${borderKupca(rata.kupacId?.nacinPlacanja)} ${
                   !rata.placeno && jeDospela(rata.datumDospeca)
                     ? 'bg-red-50'
                     : ''

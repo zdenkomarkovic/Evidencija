@@ -10,7 +10,7 @@ interface Kupac {
   email2?: string;
   telefon: string;
   telefon2?: string;
-  nacinPlacanja?: 'fiskalni' | 'faktura';
+  nacinPlacanja?: 'fiskalni' | 'faktura' | 'kes';
   domen?: string;
   pib?: string;
   maticnibroj?: string;
@@ -38,7 +38,7 @@ export default function IzmeniKupcaModal({
   const [email2, setEmail2] = useState('');
   const [telefon, setTelefon] = useState('');
   const [telefon2, setTelefon2] = useState('');
-  const [nacinPlacanja, setNacinPlacanja] = useState<'fiskalni' | 'faktura'>('fiskalni');
+  const [nacinPlacanja, setNacinPlacanja] = useState<'fiskalni' | 'faktura' | 'kes'>('fiskalni');
   const [domen, setDomen] = useState('');
   const [pib, setPib] = useState('');
   const [maticnibroj, setMaticnibroj] = useState('');
@@ -210,7 +210,7 @@ export default function IzmeniKupcaModal({
                   name="nacinPlacanja"
                   value="fiskalni"
                   checked={nacinPlacanja === 'fiskalni'}
-                  onChange={(e) => setNacinPlacanja(e.target.value as 'fiskalni' | 'faktura')}
+                  onChange={(e) => setNacinPlacanja(e.target.value as 'fiskalni' | 'faktura' | 'kes')}
                   className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
                 />
                 <span className="ml-2 text-sm text-gray-700">Fiskalni</span>
@@ -221,10 +221,21 @@ export default function IzmeniKupcaModal({
                   name="nacinPlacanja"
                   value="faktura"
                   checked={nacinPlacanja === 'faktura'}
-                  onChange={(e) => setNacinPlacanja(e.target.value as 'fiskalni' | 'faktura')}
+                  onChange={(e) => setNacinPlacanja(e.target.value as 'fiskalni' | 'faktura' | 'kes')}
                   className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
                 />
                 <span className="ml-2 text-sm text-gray-700">Faktura</span>
+              </label>
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="nacinPlacanja"
+                  value="kes"
+                  checked={nacinPlacanja === 'kes'}
+                  onChange={(e) => setNacinPlacanja(e.target.value as 'fiskalni' | 'faktura' | 'kes')}
+                  className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                />
+                <span className="ml-2 text-sm text-gray-700">Kes</span>
               </label>
             </div>
           </div>

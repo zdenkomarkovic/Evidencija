@@ -10,7 +10,7 @@ interface Kupac {
   email2?: string;
   telefon: string;
   telefon2?: string;
-  nacinPlacanja?: "fiskalni" | "faktura";
+  nacinPlacanja?: "fiskalni" | "faktura" | "kes";
   domen?: string;
   brojRata: number;
   brojNeplacenihRata: number;
@@ -234,12 +234,16 @@ export default function KupciTabela({
                     className={`px-3 py-1 inline-flex text-xs font-semibold rounded-full ${
                       (kupac.nacinPlacanja || "fiskalni") === "fiskalni"
                         ? "bg-blue-100 text-blue-800"
-                        : "bg-green-100 text-green-800"
+                        : (kupac.nacinPlacanja) === "faktura"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-amber-100 text-amber-800"
                     }`}
                   >
                     {(kupac.nacinPlacanja || "fiskalni") === "fiskalni"
                       ? "Fiskalni"
-                      : "Faktura"}
+                      : kupac.nacinPlacanja === "faktura"
+                      ? "Faktura"
+                      : "Kes"}
                   </span>
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap">

@@ -19,6 +19,7 @@ import KupacDetaljiModal from "@/components/admin/KupacDetaljiModal";
 import FaktureTabela, { Faktura } from "@/components/admin/FaktureTabela";
 import DodajFakturuModal from "@/components/admin/DodajFakturuModal";
 import IzmeniFaktureModal from "@/components/admin/IzmeniFaktureModal";
+import KatalogUslugarTabela from "@/components/admin/KatalogUslugarTabela";
 
 interface Kupac {
   _id: string;
@@ -28,7 +29,7 @@ interface Kupac {
   telefon: string;
   telefon2?: string;
   firma?: string;
-  nacinPlacanja?: "fiskalni" | "faktura";
+  nacinPlacanja?: "fiskalni" | "faktura" | "kes";
   domen?: string;
   arhiviran?: boolean;
   brojRata: number;
@@ -106,7 +107,7 @@ export default function AdminPage() {
   const [arhiviraneKampanje, setArhiviraneKampanje] = useState<GoogleAds[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    "kupci" | "rate" | "hosting" | "googleads" | "fakture" | "arhivirani"
+    "kupci" | "rate" | "hosting" | "googleads" | "fakture" | "katalog" | "arhivirani"
   >("kupci");
 
   // Fakture state
@@ -845,6 +846,16 @@ export default function AdminPage() {
                 Fakture ({fakture?.length || 0})
               </button>
               <button
+                onClick={() => setActiveTab("katalog")}
+                className={`${
+                  activeTab === "katalog"
+                    ? "border-indigo-500 text-indigo-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+              >
+                Katalog usluga
+              </button>
+              <button
                 onClick={() => setActiveTab("arhivirani")}
                 className={`${
                   activeTab === "arhivirani"
@@ -912,6 +923,11 @@ export default function AdminPage() {
               onDelete={handleDeleteFaktura}
               onOznaciPlacenu={handleOznaciPlacenuFakturu}
             />
+          )}
+          {activeTab === "katalog" && (
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <KatalogUslugarTabela />
+            </div>
           )}
           {activeTab === "arhivirani" && (
             <div className="space-y-6">

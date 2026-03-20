@@ -780,6 +780,68 @@ export async function deleteGoogleAdsNastavak(id: string) {
 }
 
 // =====================================================
+// KATALOG USLUGA
+// =====================================================
+
+export interface KatalogUsluga {
+  id: string;
+  naziv: string;
+  jedinicaMere: string;
+  cena: number;
+  imaRokTrajanja: boolean;
+  created_at: string;
+}
+
+export async function getKatalogUsluga(): Promise<KatalogUsluga[]> {
+  const { data, error } = await supabase
+    .from('katalog_usluga')
+    .select('*')
+    .order('naziv', { ascending: true });
+  if (error) throw error;
+  return (data || []).map((r) => ({
+    id: r.id,
+    naziv: r.naziv,
+    jedinicaMere: r.jedinica_mere,
+    cena: r.cena,
+    imaRokTrajanja: r.ima_rok_trajanja,
+    created_at: r.created_at,
+  }));
+}
+
+export async function createKatalogUsluga(usluga: Omit<KatalogUsluga, 'id' | 'created_at'>): Promise<KatalogUsluga> {
+  const { data, error } = await supabase
+    .from('katalog_usluga')
+    .insert({
+      naziv: usluga.naziv,
+      jedinica_mere: usluga.jedinicaMere,
+      cena: usluga.cena,
+      ima_rok_trajanja: usluga.imaRokTrajanja,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return { id: data.id, naziv: data.naziv, jedinicaMere: data.jedinica_mere, cena: data.cena, imaRokTrajanja: data.ima_rok_trajanja, created_at: data.created_at };
+}
+
+export async function updateKatalogUsluga(id: string, usluga: Omit<KatalogUsluga, 'id' | 'created_at'>): Promise<void> {
+  const { error } = await supabase
+    .from('katalog_usluga')
+    .update({
+      naziv: usluga.naziv,
+      jedinica_mere: usluga.jedinicaMere,
+      cena: usluga.cena,
+      ima_rok_trajanja: usluga.imaRokTrajanja,
+    })
+    .eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteKatalogUsluga(id: string): Promise<void> {
+  const { error } = await supabase.from('katalog_usluga').delete().eq('id', id);
+  if (error) throw error;
+}
+
+// =====================================================
 // FAKTURE
 // =====================================================
 

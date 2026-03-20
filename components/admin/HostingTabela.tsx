@@ -6,6 +6,13 @@ interface Kupac {
   _id: string;
   ime: string;
   email: string;
+  nacinPlacanja?: string | null;
+}
+
+function borderKupca(nacinPlacanja?: string | null) {
+  if (nacinPlacanja === 'faktura') return 'border-l-4 border-l-green-400';
+  if (nacinPlacanja === 'kes') return 'border-l-4 border-l-amber-400';
+  return 'border-l-4 border-l-blue-300';
 }
 
 interface Hosting {
@@ -253,7 +260,7 @@ export default function HostingTabela({
               return (
                 <tr
                   key={h._id}
-                  className={`hover:bg-gray-50 transition-colors ${
+                  className={`hover:bg-gray-50 transition-colors ${borderKupca(h.kupacId?.nacinPlacanja)} ${
                     !h.placeno && dana <= 7 ? 'bg-red-50' : !h.placeno && dana <= 30 ? 'bg-yellow-50' : ''
                   }`}
                 >
