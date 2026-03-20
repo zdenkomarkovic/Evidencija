@@ -582,19 +582,19 @@ export default function GoogleAdsTabela({
                   key={`${kampanja._id}-${izabraniMesec}`}
                   className={`hover:bg-gray-50 transition-colors ${
                     imaNeplacene
-                      ? 'bg-red-50 border-l-4 border-l-red-500'
+                      ? 'bg-red-50'
                       : !kampanja.aktivna
-                      ? 'bg-gray-100 opacity-75 ' + borderKupca(kampanja.kupacId?.nacinPlacanja)
+                      ? 'bg-gray-100 opacity-75'
                       : !period.placeno && dana < 0
-                      ? 'bg-red-100 border-l-4 border-l-red-600'
+                      ? 'bg-red-100'
                       : !period.placeno && dana <= 7
-                      ? 'bg-red-50 ' + borderKupca(kampanja.kupacId?.nacinPlacanja)
+                      ? 'bg-red-50'
                       : !period.placeno && dana <= 14
-                      ? 'bg-yellow-50 ' + borderKupca(kampanja.kupacId?.nacinPlacanja)
-                      : borderKupca(kampanja.kupacId?.nacinPlacanja)
+                      ? 'bg-yellow-50'
+                      : ''
                   }`}
                 >
-                  <td className="px-4 py-4 whitespace-nowrap">
+                  <td className={`px-4 py-4 whitespace-nowrap ${borderKupca(kampanja.kupacId?.nacinPlacanja)}`}>
                     <div className="text-sm font-semibold text-gray-600">
                       {index + 1}.
                     </div>

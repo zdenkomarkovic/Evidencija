@@ -10,7 +10,7 @@ interface Kupac {
   email2?: string;
   telefon: string;
   telefon2?: string;
-  nacinPlacanja?: 'fiskalni' | 'faktura';
+  nacinPlacanja?: 'fiskalni' | 'faktura' | 'kes';
   domen?: string;
   arhiviran?: boolean;
 }

@@ -251,13 +251,13 @@ export default function RateTabela({
             {filtriraneRate.map((rata, index) => (
               <tr
                 key={rata._id}
-                className={`hover:bg-gray-50 transition-colors ${borderKupca(rata.kupacId?.nacinPlacanja)} ${
+                className={`hover:bg-gray-50 transition-colors ${
                   !rata.placeno && jeDospela(rata.datumDospeca)
                     ? 'bg-red-50'
                     : ''
                 }`}
               >
-                <td className="px-4 py-4 whitespace-nowrap">
+                <td className={`px-4 py-4 whitespace-nowrap ${borderKupca(rata.kupacId?.nacinPlacanja)}`}>
                   <div className="text-sm font-semibold text-gray-600">
                     {index + 1}.
                   </div>

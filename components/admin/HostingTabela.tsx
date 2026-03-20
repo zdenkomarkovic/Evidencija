@@ -260,11 +260,11 @@ export default function HostingTabela({
               return (
                 <tr
                   key={h._id}
-                  className={`hover:bg-gray-50 transition-colors ${borderKupca(h.kupacId?.nacinPlacanja)} ${
+                  className={`hover:bg-gray-50 transition-colors ${
                     !h.placeno && dana <= 7 ? 'bg-red-50' : !h.placeno && dana <= 30 ? 'bg-yellow-50' : ''
                   }`}
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className={`px-6 py-4 whitespace-nowrap ${borderKupca(h.kupacId?.nacinPlacanja)}`}>
                     <div className="text-sm font-medium text-gray-500">
                       {index + 1}
                     </div>
