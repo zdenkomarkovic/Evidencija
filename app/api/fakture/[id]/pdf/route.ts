@@ -380,6 +380,7 @@ export async function GET(
             React.createElement(Text, { style: styles.naslov }, 'RACUN-OTPREMNICA'),
             React.createElement(Text, { style: styles.brojFakture }, `Br. ${faktura.brojFakture}`),
             React.createElement(Text, { style: styles.datumPodaci }, `Datum izdavanja: ${formatDatum(faktura.datumIzdavanja)}`),
+            React.createElement(Text, { style: styles.datumPodaci }, `Datum prometa: ${formatDatum(faktura.datumIzdavanja)}`),
             React.createElement(Text, { style: styles.datumPodaci }, `Datum valute: ${formatDatum(faktura.datumValute)}`),
             React.createElement(Text, { style: styles.datumPodaci }, `Mesto izdavanja: ${firma.mestoIzdavanja}`)
           )
