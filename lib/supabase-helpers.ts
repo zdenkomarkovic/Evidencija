@@ -920,7 +920,8 @@ export async function getSledediBrojFakture(): Promise<string> {
 
   if (error) throw error;
 
-  let maxSeq = 0;
+  // Fakture 26-RN001000001 do 26-RN001000007 izdate su pre ovog sistema
+  let maxSeq = yy === "26" ? 7 : 0;
   if (data && data.length > 0) {
     for (const row of data) {
       const seq = parseInt(row.broj_fakture.slice(prefix.length), 10);
