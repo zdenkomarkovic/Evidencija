@@ -3,12 +3,13 @@ import { getFakturaById } from '@/lib/supabase-helpers';
 import React from 'react';
 import { renderToBuffer, Document, Page, Text, View, Image, StyleSheet, Font } from '@react-pdf/renderer';
 import fs from 'fs';
+import path from 'path';
 
 Font.register({
   family: 'Arial',
   fonts: [
-    { src: 'C:/Windows/Fonts/arial.ttf', fontWeight: 'normal' },
-    { src: 'C:/Windows/Fonts/arialbd.ttf', fontWeight: 'bold' },
+    { src: path.join(process.cwd(), 'public/fonts/arial.ttf'), fontWeight: 'normal' },
+    { src: path.join(process.cwd(), 'public/fonts/arialbd.ttf'), fontWeight: 'bold' },
   ],
 });
 
@@ -301,7 +302,7 @@ export async function GET(
     const { id } = await params;
     const faktura = await getFakturaById(id);
 
-    const logoPath = 'c:\\Users\\DELL\\Pictures\\ChatGPT Image Oct 26, 2025, 02_32_36 AM.png';
+    const logoPath = path.join(process.cwd(), 'public/logo.png');
     const logoBase64 = fs.existsSync(logoPath)
       ? `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}`
       : null;
