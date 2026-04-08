@@ -360,6 +360,11 @@ export interface Hosting {
   datum_placanja?: string | null;
   nacin_placanja?: string | null;
   podsetnik_poslat: boolean;
+  podsetnik_30_poslat: boolean;
+  podsetnik_14_poslat: boolean;
+  podsetnik_7_poslat: boolean;
+  podsetnik_1_poslat: boolean;
+  iznos: number;
   created_at: string;
   updated_at: string;
   kupacId?: Kupac | null; // Za populate
@@ -410,6 +415,11 @@ export async function getHosting(filters?: {
     datumPlacanja: host.datum_placanja,
     nacinPlacanja: host.nacin_placanja,
     podsetnikPoslat: host.podsetnik_poslat,
+    podsetnik30Poslat: host.podsetnik_30_poslat ?? false,
+    podsetnik14Poslat: host.podsetnik_14_poslat ?? false,
+    podsetnik7Poslat: host.podsetnik_7_poslat ?? false,
+    podsetnik1Poslat: host.podsetnik_1_poslat ?? false,
+    iznos: host.iznos ?? 0,
   }));
 
   // Podrazumevano filtriramo hosting arhiviranih kupaca

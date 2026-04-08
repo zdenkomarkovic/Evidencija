@@ -64,6 +64,11 @@ interface Hosting {
   datumPlacanja?: string | null;
   nacinPlacanja?: string | null;
   podsetnikPoslat: boolean;
+  podsetnik30Poslat?: boolean;
+  podsetnik14Poslat?: boolean;
+  podsetnik7Poslat?: boolean;
+  podsetnik1Poslat?: boolean;
+  iznos?: number;
 }
 
 interface Nastavak {

@@ -44,6 +44,11 @@ export async function POST(request: NextRequest) {
       datum_placanja: null,
       nacin_placanja: null,
       podsetnik_poslat: false,
+      podsetnik_30_poslat: false,
+      podsetnik_14_poslat: false,
+      podsetnik_7_poslat: false,
+      podsetnik_1_poslat: false,
+      iznos: trenutniHosting.iznos ?? 0,
     });
 
     return NextResponse.json({

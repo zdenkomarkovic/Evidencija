@@ -22,6 +22,7 @@ export default function DodajHostingModal({
 }: DodajHostingModalProps) {
   const [kupacId, setKupacId] = useState('');
   const [datumPocetka, setDatumPocetka] = useState('');
+  const [iznos, setIznos] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -49,12 +50,14 @@ export default function DodajHostingModal({
           kupacId,
           datumPocetka,
           datumObnavljanja: datumIsteka,
+          iznos: iznos ? parseFloat(iznos) : 0,
         }),
       });
 
       if (res.ok) {
         setKupacId('');
         setDatumPocetka('');
+        setIznos('');
         onSuccess();
         onClose();
       } else {
@@ -110,6 +113,21 @@ export default function DodajHostingModal({
               value={datumPocetka}
               onChange={(e) => setDatumPocetka(e.target.value)}
               required
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Iznos (RSD)
+            </label>
+            <input
+              type="number"
+              value={iznos}
+              onChange={(e) => setIznos(e.target.value)}
+              placeholder="0.00"
+              min="0"
+              step="0.01"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>

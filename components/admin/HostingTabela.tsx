@@ -24,6 +24,11 @@ interface Hosting {
   datumPlacanja?: string | null;
   nacinPlacanja?: string | null;
   podsetnikPoslat: boolean;
+  podsetnik30Poslat?: boolean;
+  podsetnik14Poslat?: boolean;
+  podsetnik7Poslat?: boolean;
+  podsetnik1Poslat?: boolean;
+  iznos?: number;
 }
 
 interface HostingTabelaProps {
@@ -246,7 +251,10 @@ export default function HostingTabela({
                 Status / Datum
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Podsetnik
+                Iznos
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Podsetnici
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Akcije
@@ -335,15 +343,31 @@ export default function HostingTabela({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        h.podsetnikPoslat
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      {h.podsetnikPoslat ? 'Poslat' : 'Nije poslat'}
-                    </span>
+                    <div className="text-sm font-semibold text-gray-900">
+                      {h.iznos ? `${h.iznos.toLocaleString('de-DE', { minimumFractionDigits: 2 })} RSD` : '—'}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex gap-1 items-center">
+                      {[
+                        { label: '30', poslat: h.podsetnik30Poslat, title: '30 dana pre' },
+                        { label: '14', poslat: h.podsetnik14Poslat, title: '14 dana pre' },
+                        { label: '7',  poslat: h.podsetnik7Poslat,  title: '7 dana pre'  },
+                        { label: '1',  poslat: h.podsetnik1Poslat,  title: '1 dan pre'   },
+                      ].map((p) => (
+                        <span
+                          key={p.label}
+                          title={`Podsetnik ${p.title}: ${p.poslat ? 'poslat' : 'nije poslat'}`}
+                          className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold transition-all ${
+                            p.poslat
+                              ? 'bg-green-500 text-white'
+                              : 'bg-gray-100 text-gray-300'
+                          }`}
+                        >
+                          {p.label}
+                        </span>
+                      ))}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex gap-2 flex-wrap">

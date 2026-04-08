@@ -12,6 +12,7 @@ interface Hosting {
   kupacId: string | { _id: string; ime: string };
   datumPocetka?: string;
   datumObnavljanja: string;
+  iznos?: number;
 }
 
 interface IzmeniHostingModalProps {
@@ -31,6 +32,7 @@ export default function IzmeniHostingModal({
 }: IzmeniHostingModalProps) {
   const [kupacId, setKupacId] = useState('');
   const [datumPocetka, setDatumPocetka] = useState('');
+  const [iznos, setIznos] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -47,6 +49,7 @@ export default function IzmeniHostingModal({
     if (hosting) {
       const kupacIdValue = typeof hosting.kupacId === 'string' ? hosting.kupacId : hosting.kupacId._id;
       setKupacId(kupacIdValue);
+      setIznos(hosting.iznos ? String(hosting.iznos) : '');
 
       // Ako datumPocetka postoji, koristi ga, inače izračunaj iz datuma isteka (godina dana unazad)
       if (hosting.datumPocetka) {
@@ -78,6 +81,7 @@ export default function IzmeniHostingModal({
           kupacId,
           datumPocetka,
           datumObnavljanja: datumIsteka,
+          iznos: iznos ? parseFloat(iznos) : 0,
         }),
       });
 
@@ -140,6 +144,21 @@ export default function IzmeniHostingModal({
               value={datumPocetka}
               onChange={(e) => setDatumPocetka(e.target.value)}
               required
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Iznos (RSD)
+            </label>
+            <input
+              type="number"
+              value={iznos}
+              onChange={(e) => setIznos(e.target.value)}
+              placeholder="0.00"
+              min="0"
+              step="0.01"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>

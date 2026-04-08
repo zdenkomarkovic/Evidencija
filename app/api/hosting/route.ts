@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { kupacId, datumPocetka, datumObnavljanja } = body;
+    const { kupacId, datumPocetka, datumObnavljanja, iznos } = body;
 
     if (!kupacId || !datumObnavljanja) {
       return NextResponse.json(
@@ -57,6 +57,11 @@ export async function POST(request: NextRequest) {
       datum_placanja: null,
       nacin_placanja: null,
       podsetnik_poslat: false,
+      podsetnik_30_poslat: false,
+      podsetnik_14_poslat: false,
+      podsetnik_7_poslat: false,
+      podsetnik_1_poslat: false,
+      iznos: iznos ? Number(iznos) : 0,
     });
 
     return NextResponse.json(noviHosting, { status: 201 });

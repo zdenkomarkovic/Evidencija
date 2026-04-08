@@ -40,7 +40,7 @@ export async function PUT(
     const { id } = await params;
 
     const body = await request.json();
-    const { kupacId, datumPocetka, datumObnavljanja, podsetnikPoslat } = body;
+    const { kupacId, datumPocetka, datumObnavljanja, podsetnikPoslat, iznos } = body;
 
     if (!kupacId || !datumObnavljanja) {
       return NextResponse.json(
@@ -63,6 +63,7 @@ export async function PUT(
       datum_pocetka: datumPocetka ? new Date(datumPocetka).toISOString() : null,
       datum_obnavljanja: new Date(datumObnavljanja).toISOString(),
       podsetnik_poslat: podsetnikPoslat !== undefined ? podsetnikPoslat : false,
+      ...(iznos !== undefined && { iznos: Number(iznos) }),
     });
 
     if (!azuriranHosting) {
