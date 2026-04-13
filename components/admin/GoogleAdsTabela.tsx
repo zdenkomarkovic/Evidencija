@@ -282,7 +282,6 @@ export default function GoogleAdsTabela({
     // Funkcija koja vraća datum početka perioda za datu kampanju u izabranom mesecu
     const getPeriodStartDate = (kampanja: GoogleAds) => {
       const pocetakKampanje = new Date(kampanja.datumPocetka);
-      const istekKampanje = new Date(kampanja.datumIsteka);
       const mesecPocetkaKampanje = `${pocetakKampanje.getFullYear()}-${String(pocetakKampanje.getMonth() + 1).padStart(2, '0')}`;
 
       // Ako je ovo mesec kada je kampanja počela, koristi datum početka kampanje
@@ -485,7 +484,6 @@ export default function GoogleAdsTabela({
                 const [godina, mesec] = izabraniMesec.split('-').map(Number);
 
                 const pocetakKampanje = new Date(kampanja.datumPocetka);
-                const istekKampanje = new Date(kampanja.datumIsteka);
 
                 // Osnovni period se prikazuje SAMO u kalendarskom mesecu kada je kampanja počela
                 const mesecPocetkaKampanje = `${pocetakKampanje.getFullYear()}-${String(pocetakKampanje.getMonth() + 1).padStart(2, '0')}`;
@@ -804,7 +802,6 @@ export default function GoogleAdsTabela({
 
           konacneKampanje.forEach((kampanja) => {
             const pocetakKampanje = new Date(kampanja.datumPocetka);
-            const istekKampanje = new Date(kampanja.datumIsteka);
             const mesecPocetkaKampanje = `${pocetakKampanje.getFullYear()}-${String(pocetakKampanje.getMonth() + 1).padStart(2, '0')}`;
 
             let iznos = 0;

@@ -25,7 +25,8 @@
       "Bash(grep -v \"^$\")",
       "Bash(mkdir -p E:/Sajtovi/softveri/podsetnik-rate-supabase/public/fonts)",
       "Bash(cp C:/Windows/Fonts/arial.ttf E:/Sajtovi/softveri/podsetnik-rate-supabase/public/fonts/)",
-      "Bash(cp C:/Windows/Fonts/arialbd.ttf E:/Sajtovi/softveri/podsetnik-rate-supabase/public/fonts/)"
+      "Bash(cp C:/Windows/Fonts/arialbd.ttf E:/Sajtovi/softveri/podsetnik-rate-supabase/public/fonts/)",
+      "Bash(npx next:*)"
     ],
     "deny": [],
     "ask": []
