@@ -283,6 +283,30 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 1,
   },
+  pozivBlok: {
+    marginBottom: 12,
+    padding: 10,
+    backgroundColor: '#fffbeb',
+    borderLeft: '3pt solid #f59e0b',
+  },
+  pozivLabel: {
+    fontSize: 7.5,
+    fontWeight: 'bold',
+    color: '#92400e',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+  },
+  pozivBroj: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#1a1a2e',
+    letterSpacing: 1,
+  },
+  pozivNapomena: {
+    fontSize: 7,
+    color: '#92400e',
+    marginTop: 3,
+  },
 });
 
 function formatIznos(iznos: number): string {
@@ -321,6 +345,10 @@ export async function GET(
       telefon: process.env.FIRMA_TELEFON || '',
     };
 
+    const pozivNaBroj = faktura.status === 'predracun'
+      ? faktura.brojFakture.replace(/[^0-9]/g, '')
+      : null;
+
     const kupac = faktura.kupacId as {
       ime: string;
       firma?: string;
@@ -329,7 +357,11 @@ export async function GET(
       adresa?: string;
       grad?: string;
       postanskiBroj?: string;
+      nacinPlacanja?: string | null;
     } | null;
+
+    const jeFizickoLice = kupac?.nacinPlacanja !== 'faktura';
+    const prikazNaziv = jeFizickoLice ? (kupac?.ime || '') : (kupac?.firma || kupac?.ime || '');
 
     const stavke = faktura.stavke as {
       _id: string;
@@ -379,7 +411,7 @@ export async function GET(
             View,
             { style: styles.naslovBlok },
             React.createElement(Text, { style: styles.naslov }, faktura.status === 'predracun' ? 'PREDRACUN' : 'RACUN-OTPREMNICA'),
-            React.createElement(Text, { style: styles.brojFakture }, `Br. ${faktura.brojFakture}`),
+            React.createElement(Text, { style: styles.brojFakture }, `${faktura.status === 'predracun' ? 'Broj predračuna' : 'Broj računa'}: ${faktura.brojFakture}`),
             React.createElement(Text, { style: styles.datumPodaci }, `Datum izdavanja: ${formatDatum(faktura.datumIzdavanja)}`),
             React.createElement(Text, { style: styles.datumPodaci }, `Datum prometa: ${formatDatum(faktura.datumIzdavanja)}`),
             React.createElement(Text, { style: styles.datumPodaci }, `Datum valute: ${formatDatum(faktura.datumValute)}`),
@@ -394,14 +426,14 @@ export async function GET(
           React.createElement(
             View,
             { style: styles.kupacBlok },
-            React.createElement(Text, { style: styles.kupacNaslov }, 'PRIMALAC RACUNA'),
-            React.createElement(Text, { style: styles.kupacNaziv }, kupac?.firma || kupac?.ime || ''),
+            React.createElement(Text, { style: styles.kupacNaslov }, faktura.status === 'predracun' ? (jeFizickoLice ? 'PRIMALAC PREDRACUNA (fizičko lice)' : 'PRIMALAC PREDRACUNA') : (jeFizickoLice ? 'PRIMALAC RACUNA (fizičko lice)' : 'PRIMALAC RACUNA')),
+            React.createElement(Text, { style: styles.kupacNaziv }, prikazNaziv),
             kupac?.adresa ? React.createElement(Text, { style: styles.kupacPodaci }, kupac.adresa) : null,
             (kupac?.postanskiBroj || kupac?.grad)
               ? React.createElement(Text, { style: styles.kupacPodaci }, `${kupac?.postanskiBroj || ''} ${kupac?.grad || ''}`.trim())
               : null,
-            kupac?.pib ? React.createElement(Text, { style: styles.kupacPodaci }, `PIB: ${kupac.pib}`) : null,
-            kupac?.maticnibroj ? React.createElement(Text, { style: styles.kupacPodaci }, `Mat. br.: ${kupac.maticnibroj}`) : null
+            !jeFizickoLice && kupac?.pib ? React.createElement(Text, { style: styles.kupacPodaci }, `PIB: ${kupac.pib}`) : null,
+            !jeFizickoLice && kupac?.maticnibroj ? React.createElement(Text, { style: styles.kupacPodaci }, `Mat. br.: ${kupac.maticnibroj}`) : null
           )
         ),
 
@@ -457,7 +489,7 @@ export async function GET(
             View,
             { style: styles.specHeader },
             React.createElement(Text, { style: [styles.specHeaderText, styles.specColDatum] }, 'Datum'),
-            React.createElement(Text, { style: [styles.specHeaderText, styles.specColBroj] }, 'Broj racuna'),
+            React.createElement(Text, { style: [styles.specHeaderText, styles.specColBroj] }, faktura.status === 'predracun' ? 'Broj predračuna' : 'Broj računa'),
             React.createElement(Text, { style: [styles.specHeaderText, styles.specColIznos] }, 'Iznos'),
             React.createElement(Text, { style: [styles.specHeaderText, styles.specColOsnov20] }, 'Osnovica 20%'),
             React.createElement(Text, { style: [styles.specHeaderText, styles.specColPdv20] }, 'Iznos 20%'),
@@ -521,13 +553,16 @@ export async function GET(
         React.createElement(
           View,
           { style: styles.pdvNapomena },
-          React.createElement(
-            Text,
-            { style: styles.pdvText },
+          React.createElement(Text, { style: styles.pdvText },
             faktura.status === 'predracun'
-              ? 'Predracun nije fiskalni dokument. Placanjem po ovom predracunu potvrdujete narudzbinu usluge.'
-              : 'Obveznik PDV-a nije u sistemu PDV-a u skladu sa clan. 33. Zakona o PDV-u.'
-          )
+              ? 'Predračun nije fiskalni dokument. Plaćanjem po ovom predračunu potvrđujete narudžbinu usluge.'
+              : 'Obveznik PDV-a nije u sistemu PDV-a u skladu sa čl. 33. Zakona o PDV-u.'
+          ),
+          faktura.status === 'predracun'
+            ? React.createElement(Text, { style: [styles.pdvText, { marginTop: 3 }] },
+                'Obveznik PDV-a nije u sistemu PDV-a u skladu sa čl. 33. Zakona o PDV-u.'
+              )
+            : null
         ),
 
         // NAPOMENA
@@ -548,6 +583,17 @@ export async function GET(
               React.createElement(Text, { style: styles.racunNaslov }, 'UPLATA NA RACUN:'),
               React.createElement(Text, { style: styles.racunText }, `${firma.racun1}${firma.banka1 ? ` - ${firma.banka1}` : ''}`),
               firma.racun2 ? React.createElement(Text, { style: styles.racunText }, `${firma.racun2}${firma.banka2 ? ` - ${firma.banka2}` : ''}`) : null
+            )
+          : null,
+
+        // POZIV NA BROJ - samo za predracun
+        pozivNaBroj
+          ? React.createElement(
+              View,
+              { style: styles.pozivBlok },
+              React.createElement(Text, { style: styles.pozivLabel }, 'Poziv na broj (obavezno upisati pri uplati):'),
+              React.createElement(Text, { style: styles.pozivBroj }, pozivNaBroj),
+              React.createElement(Text, { style: styles.pozivNapomena }, 'Obavezno upišite ovaj poziv na broj kako bismo identifikovali Vašu uplatu.')
             )
           : null,
 
@@ -574,7 +620,8 @@ export async function GET(
 
     const buffer = await renderToBuffer(doc);
 
-    const fileName = `faktura-${faktura.brojFakture.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
+    const filePrefix = faktura.status === 'predracun' ? 'profaktura' : 'faktura';
+    const fileName = `${filePrefix}-${faktura.brojFakture.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
 
     return new NextResponse(buffer, {
       status: 200,

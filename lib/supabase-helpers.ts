@@ -901,6 +901,7 @@ function mapKupacForFaktura(kupac: Record<string, unknown>) {
     adresa: kupac.adresa,
     grad: kupac.grad,
     postanskiBroj: kupac.postanski_broj,
+    nacinPlacanja: kupac.nacin_placanja,
   };
 }
 

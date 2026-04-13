@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGoogleAdsById, updateGoogleAds, updateGoogleAdsNastavak, addGoogleAdsNastavak } from '@/lib/supabase-helpers';
+import supabase from '@/lib/supabase';
 
 // POST - Označi iznos kao plaćen
 export async function POST(request: NextRequest) {
@@ -62,6 +63,13 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Označi odgovarajuću profakturu kao plaćenu (ako postoji)
+    await supabase
+      .from('fakture')
+      .update({ status: 'placena' })
+      .like('broj_fakture', `GA-%-${kampanjaId.substring(0, 8).toUpperCase()}`)
+      .eq('status', 'predracun');
 
     console.log('Iznos označen kao plaćen:', kampanjaId, tipIznosa, nastavakId, datum_placanja);
     return NextResponse.json({ message: 'Iznos uspešno označen kao plaćen' });

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateHosting, getHostingById, createHosting } from '@/lib/supabase-helpers';
+import supabase from '@/lib/supabase';
 
 // POST - Označi hosting kao plaćen i kreiraj novu godinu
 export async function POST(request: NextRequest) {
@@ -30,6 +31,13 @@ export async function POST(request: NextRequest) {
       nacin_placanja: nacinPlacanja || 'manual',
       datum_placanja: datumPlacanja ? new Date(datumPlacanja).toISOString() : new Date().toISOString(),
     });
+
+    // Označi odgovarajuću profakturu kao plaćenu (ako postoji)
+    await supabase
+      .from('fakture')
+      .update({ status: 'placena' })
+      .like('broj_fakture', `PF-%-${hostingId.substring(0, 8).toUpperCase()}`)
+      .eq('status', 'predracun');
 
     // Kreiraj novi hosting za narednu godinu
     const datumObnavljanja = new Date(trenutniHosting.datum_obnavljanja);

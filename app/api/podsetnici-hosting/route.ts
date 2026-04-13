@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabase';
 import { posaljiEmail, generisiHostingEmailBody } from '@/lib/email-service';
 import { generisiProfakturaBuffer, generisiPozivNaBroj } from '@/lib/profaktura-pdf';
+import { createFaktura } from '@/lib/supabase-helpers';
 
 const FIRMA = {
   naziv: process.env.FIRMA_NAZIV || 'Vaša Firma',
@@ -104,6 +105,37 @@ async function posaljiPodsetnik(
       html: emailHtml,
       attachment: pdfAttachment,
     });
+
+    // Sačuvaj profakturu u bazu ako još ne postoji
+    const { data: postojeca } = await supabase
+      .from('fakture')
+      .select('id')
+      .eq('broj_fakture', profakturaBroj)
+      .maybeSingle();
+
+    if (!postojeca) {
+      await createFaktura(
+        {
+          kupac_id: hosting.kupac_id as string,
+          broj_fakture: profakturaBroj,
+          datum_izdavanja: danas.toISOString(),
+          datum_valute: hosting.datum_obnavljanja as string,
+          status: 'predracun',
+          napomena: null,
+          ukupan_iznos: iznos,
+        },
+        [
+          {
+            naziv: 'Hosting usluga - godišnje održavanje',
+            jedinica_mere: 'kom',
+            kolicina: 1,
+            cena: iznos,
+            iznos: iznos,
+            redni_broj: 1,
+          },
+        ]
+      );
+    }
   } else {
     // Kes: samo jednostavan podsetnik
     const emailHtml = generisiHostingEmailBody(

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabase';
 import { posaljiEmail, generisiGoogleAdsEmailBody } from '@/lib/email-service';
 import { generisiProfakturaBuffer, generisiPozivNaBroj } from '@/lib/profaktura-pdf';
+import { createFaktura } from '@/lib/supabase-helpers';
 
 const FIRMA = {
   naziv: process.env.FIRMA_NAZIV || 'Vaša Firma',
@@ -132,6 +133,37 @@ async function posaljiPodsetnik(
         contentType: 'application/pdf',
       },
     });
+
+    // Sačuvaj profakturu u bazu ako još ne postoji
+    const { data: postojeca } = await supabase
+      .from('fakture')
+      .select('id')
+      .eq('broj_fakture', profakturaBroj)
+      .maybeSingle();
+
+    if (!postojeca) {
+      await createFaktura(
+        {
+          kupac_id: kampanja.kupac_id as string,
+          broj_fakture: profakturaBroj,
+          datum_izdavanja: danas.toISOString(),
+          datum_valute: datumIsteka.toISOString(),
+          status: 'predracun',
+          napomena: `Kampanja: ${imeKampanje}`,
+          ukupan_iznos: iznos,
+        },
+        [
+          {
+            naziv: `Google Ads - ${imeKampanje}`,
+            jedinica_mere: 'kom',
+            kolicina: 1,
+            cena: iznos,
+            iznos: iznos,
+            redni_broj: 1,
+          },
+        ]
+      );
+    }
   } else {
     const emailHtml = generisiGoogleAdsEmailBody(
       kupac.ime as string,

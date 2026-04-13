@@ -75,8 +75,11 @@ export default function DodajFakturuModal({
   const [openKatalogIndex, setOpenKatalogIndex] = useState<number | null>(null);
 
   const kupciZaFakturu = kupci.filter(
-    (k) => k.nacinPlacanja === "faktura" || k.firma
+    (k) => k.nacinPlacanja === "faktura"
   );
+
+  const izabraniKupac = kupci.find((k) => k._id === kupacId);
+  const jeFizickoLice = izabraniKupac ? izabraniKupac.nacinPlacanja !== 'faktura' : false;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -223,26 +226,32 @@ export default function DodajFakturuModal({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Kupac (pravno lice) *
+                Kupac *
               </label>
               <select
                 value={kupacId}
-                onChange={(e) => setKupacId(e.target.value)}
+                onChange={(e) => {
+                  setKupacId(e.target.value);
+                  const k = kupci.find(k => k._id === e.target.value);
+                  if (k && !k.firma && status !== "predracun") {
+                    setStatus("predracun");
+                  }
+                }}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="">— Izaberi kupca —</option>
-                {kupciZaFakturu.map((k) => (
+                {(status === "predracun" ? kupci : kupciZaFakturu).map((k) => (
                   <option key={k._id} value={k._id}>
                     {k.firma ? `${k.firma} (${k.ime})` : k.ime}
                   </option>
                 ))}
-                {kupciZaFakturu.length === 0 && (
-                  <option disabled value="">
-                    Nema kupaca sa nacinom placanja &quot;Faktura&quot;
-                  </option>
-                )}
               </select>
+              {jeFizickoLice && (
+                <p className="mt-1 text-xs text-amber-600">
+                  Fizičko lice — može se kreirati samo predračun, bez konverzije u fakturu.
+                </p>
+              )}
             </div>
 
             <div>
@@ -276,11 +285,12 @@ export default function DodajFakturuModal({
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as "nacrt" | "predracun" | "izdata")}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                disabled={jeFizickoLice}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:text-gray-500"
               >
                 <option value="predracun">Predračun (pošalji prvo, faktura tek kad uplati)</option>
-                <option value="izdata">Faktura (odmah izdata)</option>
-                <option value="nacrt">Nacrt</option>
+                {!jeFizickoLice && <option value="izdata">Faktura (odmah izdata)</option>}
+                {!jeFizickoLice && <option value="nacrt">Nacrt</option>}
               </select>
             </div>
           </div>

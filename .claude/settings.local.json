@@ -26,7 +26,11 @@
       "Bash(mkdir -p E:/Sajtovi/softveri/podsetnik-rate-supabase/public/fonts)",
       "Bash(cp C:/Windows/Fonts/arial.ttf E:/Sajtovi/softveri/podsetnik-rate-supabase/public/fonts/)",
       "Bash(cp C:/Windows/Fonts/arialbd.ttf E:/Sajtovi/softveri/podsetnik-rate-supabase/public/fonts/)",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "Bash(mkdir -p \"E:/Sajtovi/softveri/evidencija/app/api/hosting/[id]/profaktura-pdf\")",
+      "Bash(mkdir -p \"E:/Sajtovi/softveri/evidencija/app/api/google-ads/[id]/profaktura-pdf\")",
+      "Bash(rm -rf \"E:/Sajtovi/softveri/evidencija/app/api/hosting/[id]/profaktura-pdf\")",
+      "Bash(rm -rf \"E:/Sajtovi/softveri/evidencija/app/api/google-ads/[id]/profaktura-pdf\")"
     ],
     "deny": [],
     "ask": []
