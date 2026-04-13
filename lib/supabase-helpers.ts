@@ -185,6 +185,8 @@ export interface Rata {
   datum_placanja?: string | null;
   nacin_placanja?: "racun1" | "racun2" | "manual" | null;
   podsetnik_poslat: boolean;
+  podsetnik_7_poslat: boolean;
+  podsetnik_1_poslat: boolean;
   created_at: string;
   updated_at: string;
   kupacId?: Kupac | null; // Za populate
@@ -240,6 +242,8 @@ export async function getRate(filters?: {
     datumPlacanja: rata.datum_placanja,
     nacinPlacanja: rata.nacin_placanja,
     podsetnikPoslat: rata.podsetnik_poslat,
+    podsetnik7Poslat: rata.podsetnik_7_poslat ?? false,
+    podsetnik1Poslat: rata.podsetnik_1_poslat ?? false,
   }));
 
   // Podrazumevano filtriramo rate arhiviranih kupaca
@@ -556,6 +560,8 @@ export interface GoogleAds {
   aktivna: boolean;
   datum_zaustavljanja: string | null;
   datum_ponovnog_pokretanja: string | null;
+  podsetnik_7_poslat: boolean;
+  podsetnik_1_poslat: boolean;
   created_at: string;
   updated_at: string;
   nastavci?: GoogleAdsNastavak[];
@@ -611,6 +617,8 @@ export async function getGoogleAds(filters?: { kupac_id?: string; includeArhivir
     aktivna: ads.aktivna ?? true,
     datumZaustavljanja: ads.datum_zaustavljanja,
     datumPonovnogPokretanja: ads.datum_ponovnog_pokretanja,
+    podsetnik7Poslat: ads.podsetnik_7_poslat ?? false,
+    podsetnik1Poslat: ads.podsetnik_1_poslat ?? false,
     nastavci: ads.google_ads_nastavci
       ? ads.google_ads_nastavci.map((n: GoogleAdsNastavak) => ({
           _id: n.id,
@@ -873,7 +881,7 @@ export interface Faktura {
   broj_fakture: string;
   datum_izdavanja: string;
   datum_valute: string;
-  status: "nacrt" | "izdata" | "placena" | "stornirana";
+  status: "nacrt" | "predracun" | "izdata" | "placena" | "stornirana";
   napomena?: string | null;
   ukupan_iznos: number;
   created_at: string;
@@ -980,6 +988,30 @@ export async function getFakturaById(id: string) {
   };
 }
 
+export async function getSledediBrojPredracuna(): Promise<string> {
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(-2);
+  const prefix = `${yy}-PR`;
+
+  const { data, error } = await supabase
+    .from("fakture")
+    .select("broj_fakture")
+    .like("broj_fakture", `${prefix}%`);
+
+  if (error) throw error;
+
+  let maxSeq = 0;
+  if (data && data.length > 0) {
+    for (const row of data) {
+      const seq = parseInt(row.broj_fakture.slice(prefix.length), 10);
+      if (!isNaN(seq) && seq > maxSeq) maxSeq = seq;
+    }
+  }
+
+  const nextSeq = maxSeq + 1;
+  return `${prefix}${String(nextSeq).padStart(4, "0")}`;
+}
+
 export async function getSledediBrojFakture(): Promise<string> {
   const now = new Date();
   const yy = String(now.getFullYear()).slice(-2);
@@ -1053,6 +1085,7 @@ export async function updateFaktura(
 ) {
   const updateData: Record<string, unknown> = {};
   if (faktura.kupac_id !== undefined) updateData.kupac_id = faktura.kupac_id;
+  if (faktura.broj_fakture !== undefined) updateData.broj_fakture = faktura.broj_fakture;
   if (faktura.datum_izdavanja !== undefined) updateData.datum_izdavanja = faktura.datum_izdavanja;
   if (faktura.datum_valute !== undefined) updateData.datum_valute = faktura.datum_valute;
   if (faktura.status !== undefined) updateData.status = faktura.status;

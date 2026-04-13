@@ -111,6 +111,7 @@ export default function AdminPage() {
   const [kampanje, setKampanje] = useState<GoogleAds[]>([]);
   const [arhiviraneKampanje, setArhiviraneKampanje] = useState<GoogleAds[]>([]);
   const [loading, setLoading] = useState(true);
+  const [prvoUcitavanje, setPrvoUcitavanje] = useState(true);
   const [activeTab, setActiveTab] = useState<
     "kupci" | "rate" | "hosting" | "googleads" | "fakture" | "katalog" | "arhivirani"
   >("kupci");
@@ -179,7 +180,7 @@ export default function AdminPage() {
   }, [arhiviraniKupciLimit]);
 
   const ucitajPodatke = async () => {
-    setLoading(true);
+    if (prvoUcitavanje) setLoading(true);
     try {
       // Učitaj SVE kupce odjednom za client-side pretragu
       const kupciUrl = `/api/kupci?page=1&limit=10000`;
@@ -220,6 +221,7 @@ export default function AdminPage() {
       setFakture([]);
     } finally {
       setLoading(false);
+      setPrvoUcitavanje(false);
     }
   };
 
@@ -515,6 +517,21 @@ export default function AdminPage() {
         body: JSON.stringify({ status: "placena" }),
       });
       if (res.ok) ucitajPodatke();
+    } catch (error) {
+      console.error("Greška:", error);
+    }
+  };
+
+  const handlePretvoriUFakturu = async (fakturaId: string) => {
+    try {
+      const res = await fetch(`/api/fakture/${fakturaId}/pretvori`, {
+        method: "POST",
+      });
+      if (res.ok) ucitajPodatke();
+      else {
+        const data = await res.json();
+        alert(data.error || "Greška pri konverziji predračuna");
+      }
     } catch (error) {
       console.error("Greška:", error);
     }
@@ -927,6 +944,7 @@ export default function AdminPage() {
               onEdit={handleEditFaktura}
               onDelete={handleDeleteFaktura}
               onOznaciPlacenu={handleOznaciPlacenuFakturu}
+              onPretvoriUFakturu={handlePretvoriUFakturu}
             />
           )}
           {activeTab === "katalog" && (

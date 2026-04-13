@@ -23,8 +23,15 @@ export async function middleware(request: NextRequest) {
 
   // Zaštita /admin i /api ruta
   if (pathname.startsWith('/admin') || pathname.startsWith('/api')) {
-    // Dozvoli pristup /api/auth/* rutama
+    // Dozvoli pristup /api/auth/* rutama i cron rutama
     if (pathname.startsWith('/api/auth')) {
+      return NextResponse.next();
+    }
+    if (
+      pathname === '/api/podsetnici' ||
+      pathname === '/api/podsetnici-hosting' ||
+      pathname === '/api/podsetnici-google-ads'
+    ) {
       return NextResponse.next();
     }
 

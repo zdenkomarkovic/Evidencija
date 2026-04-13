@@ -62,6 +62,8 @@ export async function POST(request: NextRequest) {
       datum_placanja: null,
       nacin_placanja: nacinPlacanja || null,
       podsetnik_poslat: false,
+      podsetnik_7_poslat: false,
+      podsetnik_1_poslat: false,
     });
 
     return NextResponse.json(novaRata, { status: 201 });

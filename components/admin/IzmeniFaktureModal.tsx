@@ -38,7 +38,7 @@ export default function IzmeniFaktureModal({
   const [kupacId, setKupacId] = useState("");
   const [datumIzdavanja, setDatumIzdavanja] = useState("");
   const [datumValute, setDatumValute] = useState("");
-  const [status, setStatus] = useState<"nacrt" | "izdata" | "placena" | "stornirana">("izdata");
+  const [status, setStatus] = useState<"nacrt" | "predracun" | "izdata" | "placena" | "stornirana">("izdata");
   const [napomena, setNapomena] = useState("");
   const [stavke, setStavke] = useState<Stavka[]>([]);
   const [loading, setLoading] = useState(false);
@@ -215,11 +215,12 @@ export default function IzmeniFaktureModal({
                 value={status}
                 onChange={(e) =>
                   setStatus(
-                    e.target.value as "nacrt" | "izdata" | "placena" | "stornirana"
+                    e.target.value as "nacrt" | "predracun" | "izdata" | "placena" | "stornirana"
                   )
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
+                <option value="predracun">Predračun</option>
                 <option value="nacrt">Nacrt</option>
                 <option value="izdata">Izdata</option>
                 <option value="placena">Plaćena</option>

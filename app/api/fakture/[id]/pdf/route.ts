@@ -378,7 +378,7 @@ export async function GET(
           React.createElement(
             View,
             { style: styles.naslovBlok },
-            React.createElement(Text, { style: styles.naslov }, 'RACUN-OTPREMNICA'),
+            React.createElement(Text, { style: styles.naslov }, faktura.status === 'predracun' ? 'PREDRACUN' : 'RACUN-OTPREMNICA'),
             React.createElement(Text, { style: styles.brojFakture }, `Br. ${faktura.brojFakture}`),
             React.createElement(Text, { style: styles.datumPodaci }, `Datum izdavanja: ${formatDatum(faktura.datumIzdavanja)}`),
             React.createElement(Text, { style: styles.datumPodaci }, `Datum prometa: ${formatDatum(faktura.datumIzdavanja)}`),
@@ -524,7 +524,9 @@ export async function GET(
           React.createElement(
             Text,
             { style: styles.pdvText },
-            'Obveznik PDV-a nije u sistemu PDV-a u skladu sa clan. 33. Zakona o PDV-u.'
+            faktura.status === 'predracun'
+              ? 'Predracun nije fiskalni dokument. Placanjem po ovom predracunu potvrdujete narudzbinu usluge.'
+              : 'Obveznik PDV-a nije u sistemu PDV-a u skladu sa clan. 33. Zakona o PDV-u.'
           )
         ),
 

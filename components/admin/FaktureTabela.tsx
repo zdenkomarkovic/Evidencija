@@ -28,7 +28,7 @@ export interface Faktura {
   brojFakture: string;
   datumIzdavanja: string;
   datumValute: string;
-  status: "nacrt" | "izdata" | "placena" | "stornirana";
+  status: "nacrt" | "predracun" | "izdata" | "placena" | "stornirana";
   napomena?: string;
   ukupanIznos: number;
   stavke: FakturaStavka[];
@@ -39,10 +39,12 @@ interface FaktureTabelaProps {
   onEdit: (faktura: Faktura) => void;
   onDelete: (fakturaId: string) => void;
   onOznaciPlacenu: (fakturaId: string) => void;
+  onPretvoriUFakturu: (fakturaId: string) => void;
 }
 
 const statusBoja: Record<string, string> = {
   nacrt: "bg-gray-100 text-gray-700",
+  predracun: "bg-orange-100 text-orange-700",
   izdata: "bg-blue-100 text-blue-700",
   placena: "bg-green-100 text-green-700",
   stornirana: "bg-red-100 text-red-700",
@@ -50,6 +52,7 @@ const statusBoja: Record<string, string> = {
 
 const statusNaziv: Record<string, string> = {
   nacrt: "Nacrt",
+  predracun: "Predračun",
   izdata: "Izdata",
   placena: "Plaćena",
   stornirana: "Stornirana",
@@ -65,6 +68,7 @@ export default function FaktureTabela({
   onEdit,
   onDelete,
   onOznaciPlacenu,
+  onPretvoriUFakturu,
 }: FaktureTabelaProps) {
   const [pretraga, setPretraga] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("sve");
@@ -110,10 +114,16 @@ export default function FaktureTabela({
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       {/* Statistika */}
-      <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 border-b">
+      <div className="grid grid-cols-4 gap-4 p-4 bg-gray-50 border-b">
         <div className="text-center">
           <p className="text-2xl font-bold text-gray-800">{fakture.length}</p>
           <p className="text-xs text-gray-500">Ukupno faktura</p>
+        </div>
+        <div className="text-center">
+          <p className="text-2xl font-bold text-orange-600">
+            {fakture.filter((f) => f.status === "predracun").length}
+          </p>
+          <p className="text-xs text-gray-500">Predračuni</p>
         </div>
         <div className="text-center">
           <p className="text-2xl font-bold text-blue-600">
@@ -145,6 +155,7 @@ export default function FaktureTabela({
         >
           <option value="sve">Sve fakture</option>
           <option value="nacrt">Nacrt</option>
+          <option value="predracun">Predračuni</option>
           <option value="izdata">Izdate</option>
           <option value="placena">Plaćene</option>
           <option value="stornirana">Stornirane</option>
@@ -237,6 +248,15 @@ export default function FaktureTabela({
                       >
                         {pdfLoading === faktura._id ? "..." : "PDF"}
                       </button>
+                      {faktura.status === "predracun" && (
+                        <button
+                          onClick={() => onPretvoriUFakturu(faktura._id)}
+                          className="px-2 py-1 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded text-xs transition-colors font-semibold"
+                          title="Pretvori u fakturu (kupac je uplatio)"
+                        >
+                          → Faktura
+                        </button>
+                      )}
                       {faktura.status === "izdata" && (
                         <button
                           onClick={() => onOznaciPlacenu(faktura._id)}

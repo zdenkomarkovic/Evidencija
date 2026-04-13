@@ -7,6 +7,10 @@
     {
       "path": "/api/podsetnici-hosting",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/podsetnici-google-ads",
+      "schedule": "0 9 * * *"
     }
   ]
 }

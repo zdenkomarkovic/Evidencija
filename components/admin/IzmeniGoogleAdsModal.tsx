@@ -125,8 +125,6 @@ export default function IzmeniGoogleAdsModal({
     setError('');
 
     try {
-      const datumIsteka = getDatumIsteka();
-
       const res = await fetch(`/api/google-ads/${kampanja._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -135,7 +133,7 @@ export default function IzmeniGoogleAdsModal({
           imeKampanje,
           imeGoogleNaloga,
           datumPocetka,
-          datumIsteka,
+          datumIsteka: getDatumIsteka(),
           iznos: parseFloat(iznos),
           iznosNastavka: iznosNastavka ? parseFloat(iznosNastavka) : parseFloat(iznos),
           datumPrimeneIznosaNavstavka: datumPrimene || null,

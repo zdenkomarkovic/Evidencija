@@ -168,6 +168,30 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 2,
   },
+  pozivBlok: {
+    marginBottom: 15,
+    padding: 10,
+    backgroundColor: '#fffbeb',
+    borderLeft: '3pt solid #f59e0b',
+  },
+  pozivLabel: {
+    fontSize: 8,
+    fontWeight: 'bold',
+    color: '#92400e',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+  },
+  pozivBroj: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#1a1a2e',
+    letterSpacing: 1,
+  },
+  pozivNapomena: {
+    fontSize: 7.5,
+    color: '#92400e',
+    marginTop: 3,
+  },
   napomena: {
     fontSize: 8,
     color: '#888',
@@ -188,6 +212,7 @@ interface ProfakturaData {
   broj: string;
   datum: Date;
   datumObnavljanja: Date;
+  opisUsluge?: string;
   kupac: {
     ime: string;
     firma?: string | null;
@@ -196,6 +221,7 @@ interface ProfakturaData {
     grad?: string | null;
   };
   iznos: number;
+  pozivNaBroj?: string;
   firma: {
     naziv: string;
     pib: string;
@@ -210,10 +236,16 @@ interface ProfakturaData {
   };
 }
 
-export async function generisiProfakturaBuffer(data: ProfakturaData): Promise<Buffer> {
-  const { kupac, firma, iznos } = data;
+export async function generisiPozivNaBroj(profakturaBroj: string): Promise<string> {
+  return profakturaBroj.replace(/[^0-9]/g, '');
+}
 
+export async function generisiProfakturaBuffer(data: ProfakturaData): Promise<Buffer> {
+  const { kupac, firma, iznos, pozivNaBroj, opisUsluge = 'Hosting usluga - godišnje održavanje' } = data;
+
+  const jeFirema = !!kupac.firma;
   const prikazIme = kupac.firma || kupac.ime;
+  const primaocLabel = jeFirema ? 'Primalac (pravno lice)' : 'Primalac (fizičko lice)';
 
   const doc = React.createElement(
     Document,
@@ -249,15 +281,17 @@ export async function generisiProfakturaBuffer(data: ProfakturaData): Promise<Bu
       React.createElement(
         View,
         { style: styles.sekcija },
-        React.createElement(Text, { style: styles.sekcijaLabel }, 'Primalac'),
+        React.createElement(Text, { style: styles.sekcijaLabel }, primaocLabel),
         React.createElement(
           View,
           { style: styles.kupacBlok },
           React.createElement(Text, { style: styles.kupacNaziv }, prikazIme),
-          kupac.firma ? React.createElement(Text, { style: styles.kupacInfo }, `Kontakt: ${kupac.ime}`) : null,
+          null,
           kupac.adresa ? React.createElement(Text, { style: styles.kupacInfo }, kupac.adresa) : null,
           kupac.grad ? React.createElement(Text, { style: styles.kupacInfo }, kupac.grad) : null,
-          kupac.pib ? React.createElement(Text, { style: styles.kupacInfo }, `PIB: ${kupac.pib}`) : null
+          jeFirema && kupac.pib
+            ? React.createElement(Text, { style: styles.kupacInfo }, `PIB: ${kupac.pib}`)
+            : null
         )
       ),
 
@@ -276,7 +310,7 @@ export async function generisiProfakturaBuffer(data: ProfakturaData): Promise<Bu
         React.createElement(
           View,
           { style: styles.tabelaRed },
-          React.createElement(Text, { style: [styles.tabelaCell, styles.colNaziv] }, 'Hosting usluga - godišnje održavanje'),
+          React.createElement(Text, { style: [styles.tabelaCell, styles.colNaziv] }, opisUsluge),
           React.createElement(Text, { style: [styles.tabelaCell, styles.colKol] }, '1'),
           React.createElement(Text, { style: [styles.tabelaCell, styles.colCena] }, `${formatIznos(iznos)} RSD`),
           React.createElement(Text, { style: [styles.tabelaCell, styles.colIznos] }, `${formatIznos(iznos)} RSD`)
@@ -290,18 +324,22 @@ export async function generisiProfakturaBuffer(data: ProfakturaData): Promise<Bu
         React.createElement(
           View,
           { style: styles.sumaTabela },
-          React.createElement(
-            View,
-            { style: styles.sumaRed },
-            React.createElement(Text, { style: styles.sumaLabel }, 'Iznos bez PDV:'),
-            React.createElement(Text, { style: styles.sumaVrednost }, `${formatIznos(iznos)} RSD`)
-          ),
-          React.createElement(
-            View,
-            { style: styles.sumaRed },
-            React.createElement(Text, { style: styles.sumaLabel }, 'PDV (0%):'),
-            React.createElement(Text, { style: styles.sumaVrednost }, '0,00 RSD')
-          ),
+          jeFirema
+            ? React.createElement(
+                View,
+                { style: styles.sumaRed },
+                React.createElement(Text, { style: styles.sumaLabel }, 'Iznos bez PDV:'),
+                React.createElement(Text, { style: styles.sumaVrednost }, `${formatIznos(iznos)} RSD`)
+              )
+            : null,
+          jeFirema
+            ? React.createElement(
+                View,
+                { style: styles.sumaRed },
+                React.createElement(Text, { style: styles.sumaLabel }, 'PDV (0%):'),
+                React.createElement(Text, { style: styles.sumaVrednost }, '0,00 RSD')
+              )
+            : null,
           React.createElement(
             View,
             { style: styles.ukupnoRed },
@@ -311,7 +349,7 @@ export async function generisiProfakturaBuffer(data: ProfakturaData): Promise<Bu
         )
       ),
 
-      // RACUN
+      // RACUN - uvek prikazati
       firma.racun1
         ? React.createElement(
             View,
@@ -322,17 +360,38 @@ export async function generisiProfakturaBuffer(data: ProfakturaData): Promise<Bu
           )
         : null,
 
-      // NAPOMENA
+      // POZIV NA BROJ
+      pozivNaBroj
+        ? React.createElement(
+            View,
+            { style: styles.pozivBlok },
+            React.createElement(Text, { style: styles.pozivLabel }, 'Poziv na broj (obavezno upisati pri uplati):'),
+            React.createElement(Text, { style: styles.pozivBroj }, pozivNaBroj),
+            React.createElement(
+              Text,
+              { style: styles.pozivNapomena },
+              'Obavezno upišite ovaj poziv na broj kako bismo identifikovali Vašu uplatu.'
+            )
+          )
+        : null,
+
+      // NAPOMENA - razlicita za firme i fizicka lica
       React.createElement(
         Text,
         { style: styles.napomena },
         'Profaktura nije fiskalni dokument. Plaćanjem po ovoj profakturi potvrđujete narudžbinu usluge.'
       ),
-      React.createElement(
-        Text,
-        { style: styles.napomena },
-        'Obveznik nije u sistemu PDV-a u skladu sa čl. 33. Zakona o PDV-u.'
-      )
+      jeFirema
+        ? React.createElement(
+            Text,
+            { style: styles.napomena },
+            'Obveznik nije u sistemu PDV-a u skladu sa čl. 33. Zakona o PDV-u.'
+          )
+        : React.createElement(
+            Text,
+            { style: styles.napomena },
+            'Uplatu možete izvršiti na navedeni žiro račun ili na blagajni.'
+          )
     )
   );
 

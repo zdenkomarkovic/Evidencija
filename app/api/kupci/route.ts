@@ -98,9 +98,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (nacinPlacanja && nacinPlacanja !== 'fiskalni' && nacinPlacanja !== 'faktura') {
+    if (nacinPlacanja && !['fiskalni', 'faktura', 'kes'].includes(nacinPlacanja)) {
       return NextResponse.json(
-        { error: 'Način plaćanja mora biti "fiskalni" ili "faktura"' },
+        { error: 'Način plaćanja mora biti "fiskalni", "faktura" ili "kes"' },
         { status: 400 }
       );
     }

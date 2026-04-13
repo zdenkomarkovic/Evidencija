@@ -64,7 +64,7 @@ export default function DodajFakturuModal({
   const [kupacId, setKupacId] = useState("");
   const [datumIzdavanja, setDatumIzdavanja] = useState(today);
   const [datumValute, setDatumValute] = useState(valutaDefault);
-  const [status, setStatus] = useState<"nacrt" | "izdata">("izdata");
+  const [status, setStatus] = useState<"nacrt" | "predracun" | "izdata">("predracun");
   const [napomena, setNapomena] = useState("");
   const [stavke, setStavke] = useState<Stavka[]>([
     { naziv: "", jedinicaMere: "usl", kolicina: "1", cena: "", iznos: 0, datumOd: "", datumDo: "", imaRokTrajanja: false },
@@ -83,7 +83,7 @@ export default function DodajFakturuModal({
     setKupacId("");
     setDatumIzdavanja(today);
     setDatumValute(valutaDefault);
-    setStatus("izdata");
+    setStatus("predracun");
     setNapomena("");
     setStavke([{ naziv: "", jedinicaMere: "usl", kolicina: "1", cena: "", iznos: 0, datumOd: "", datumDo: "", imaRokTrajanja: false }]);
     setError("");
@@ -208,7 +208,9 @@ export default function DodajFakturuModal({
       }}
     >
       <div className="bg-white rounded-lg p-6 max-w-4xl w-full my-8">
-        <h2 className="text-xl font-bold mb-5 text-gray-900">Nova Faktura</h2>
+        <h2 className="text-xl font-bold mb-5 text-gray-900">
+          {status === "predracun" ? "Novi Predračun" : "Nova Faktura"}
+        </h2>
 
         {error && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
@@ -273,10 +275,11 @@ export default function DodajFakturuModal({
               <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
               <select
                 value={status}
-                onChange={(e) => setStatus(e.target.value as "nacrt" | "izdata")}
+                onChange={(e) => setStatus(e.target.value as "nacrt" | "predracun" | "izdata")}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="izdata">Izdata</option>
+                <option value="predracun">Predračun (pošalji prvo, faktura tek kad uplati)</option>
+                <option value="izdata">Faktura (odmah izdata)</option>
                 <option value="nacrt">Nacrt</option>
               </select>
             </div>
@@ -455,7 +458,7 @@ export default function DodajFakturuModal({
               disabled={loading || kupciZaFakturu.length === 0}
               className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:bg-indigo-400 text-sm"
             >
-              {loading ? "Kreiranje..." : "Kreiraj Fakturu"}
+              {loading ? "Kreiranje..." : status === "predracun" ? "Kreiraj Predračun" : "Kreiraj Fakturu"}
             </button>
           </div>
         </form>

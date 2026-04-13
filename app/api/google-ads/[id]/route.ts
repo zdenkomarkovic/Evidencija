@@ -3,8 +3,11 @@ import {
   getGoogleAdsById,
   updateGoogleAds,
   deleteGoogleAds,
-  getKupacById
+  getKupacById,
+  addGoogleAdsNastavak,
+  deleteGoogleAdsNastavak,
 } from '@/lib/supabase-helpers';
+import supabase from '@/lib/supabase';
 
 // GET - Dohvati jednu Google Ads kampanju
 export async function GET(
@@ -42,7 +45,7 @@ export async function PUT(
     const { id } = await params;
 
     const body = await request.json();
-    const { kupacId, imeKampanje, imeGoogleNaloga, datumPocetka, datumIsteka, iznos, iznosNastavka, datumPrimeneIznosaNavstavka, placeno } = body;
+    const { kupacId, imeKampanje, imeGoogleNaloga, datumPocetka, datumIsteka, iznos, iznosNastavka, datumPrimeneIznosaNavstavka, placeno, nastavci } = body;
 
     if (!kupacId || !imeKampanje || !imeGoogleNaloga || !datumPocetka || !datumIsteka || iznos === undefined) {
       return NextResponse.json(
@@ -77,6 +80,34 @@ export async function PUT(
         { error: 'Google Ads kampanja nije pronađena' },
         { status: 404 }
       );
+    }
+
+    // Sinhronizuj nastavke: obriši postojeće i dodaj nove
+    if (Array.isArray(nastavci)) {
+      // Dohvati postojeće nastavke
+      const { data: postojeciNastavci } = await supabase
+        .from('google_ads_nastavci')
+        .select('id')
+        .eq('google_ads_id', id);
+
+      // Obriši sve postojeće
+      if (postojeciNastavci && postojeciNastavci.length > 0) {
+        for (const n of postojeciNastavci) {
+          await deleteGoogleAdsNastavak(n.id);
+        }
+      }
+
+      // Dodaj nove
+      for (const nastavak of nastavci) {
+        if (nastavak.datum) {
+          await addGoogleAdsNastavak(id, {
+            datum: new Date(nastavak.datum).toISOString(),
+            iznos: nastavak.iznos,
+            placeno: nastavak.placeno || false,
+            datum_placanja: nastavak.datumPlacanja || null,
+          });
+        }
+      }
     }
 
     console.log('Google Ads kampanja ažurirana:', azuriranKampanja.id);

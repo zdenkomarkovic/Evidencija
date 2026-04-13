@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFakture, createFaktura, getSledediBrojFakture } from '@/lib/supabase-helpers';
+import { getFakture, createFaktura, getSledediBrojFakture, getSledediBrojPredracuna } from '@/lib/supabase-helpers';
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,7 +42,9 @@ export async function POST(request: NextRequest) {
       0
     );
 
-    const brojFakture = await getSledediBrojFakture();
+    const brojFakture = status === 'predracun'
+      ? await getSledediBrojPredracuna()
+      : await getSledediBrojFakture();
 
     const novaFaktura = await createFaktura(
       {

@@ -30,6 +30,8 @@ export async function POST(request: NextRequest) {
       await updateGoogleAds(kampanjaId, {
         placeno: true,
         datum_placanja,
+        podsetnik_7_poslat: false,
+        podsetnik_1_poslat: false,
       });
     } else if (tipIznosa === 'nastavak') {
       // Ako nastavak već postoji, ažuriraj ga

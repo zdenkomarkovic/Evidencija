@@ -82,6 +82,8 @@ export async function POST(request: NextRequest) {
       aktivna: true,
       datum_zaustavljanja: null,
       datum_ponovnog_pokretanja: null,
+      podsetnik_7_poslat: false,
+      podsetnik_1_poslat: false,
     });
 
     return NextResponse.json(novaKampanja, { status: 201 });

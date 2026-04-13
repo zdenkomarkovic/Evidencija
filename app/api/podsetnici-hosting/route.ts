@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabase';
 import { posaljiEmail, generisiHostingEmailBody } from '@/lib/email-service';
-import { generisiProfakturaBuffer } from '@/lib/profaktura-pdf';
+import { generisiProfakturaBuffer, generisiPozivNaBroj } from '@/lib/profaktura-pdf';
 
 const FIRMA = {
   naziv: process.env.FIRMA_NAZIV || 'Vaša Firma',
@@ -46,46 +46,83 @@ async function posaljiPodsetnik(
 
   const iznos = (hosting.iznos as number) || 0;
   const hostingId = hosting.id as string;
+  const nacinPlacanja = kupac.nacin_placanja as string | null;
+  const jeKes = nacinPlacanja === 'kes';
 
-  // Generiši profaktura PDF
-  const profakturaBroj = `PF-${danas.getFullYear()}-${hostingId.substring(0, 8).toUpperCase()}`;
+  const firma = kupac.firma as string | null;
+  const prikazNaziv = firma || kupac.ime as string;
 
-  const pdfBuffer = await generisiProfakturaBuffer({
-    broj: profakturaBroj,
-    datum: danas,
-    datumObnavljanja: datumObnove,
-    kupac: {
-      ime: kupac.ime as string,
-      firma: kupac.firma as string | null,
-      pib: kupac.pib as string | null,
-      adresa: kupac.adresa as string | null,
-      grad: kupac.grad as string | null,
-    },
-    iznos,
-    firma: FIRMA,
-  });
+  // Za kes kupce: samo podsetnik, bez profakture i bez instrukcija za placanje
+  let pdfAttachment: { content: Buffer; filename: string; contentType: string } | undefined;
 
-  const emailHtml = generisiHostingEmailBody(
-    kupac.ime as string,
-    datumFormatiran,
-    danaPreostalo,
-    iznos
-  );
+  if (!jeKes) {
+    const profakturaBroj = `PF-${danas.getFullYear()}-${hostingId.substring(0, 8).toUpperCase()}`;
+    const pozivNaBroj = await generisiPozivNaBroj(profakturaBroj);
 
-  const subject = danaPreostalo <= 7
-    ? `⚠️ Hitno: Obnova hostinga za ${danaPreostalo} ${danaPreostalo === 1 ? 'dan' : 'dana'}`
-    : `Podsetnik za obnovu hostinga - ${podsetnik.label}`;
+    const pdfBuffer = await generisiProfakturaBuffer({
+      broj: profakturaBroj,
+      datum: danas,
+      datumObnavljanja: datumObnove,
+      kupac: {
+        ime: kupac.ime as string,
+        firma,
+        pib: kupac.pib as string | null,
+        adresa: kupac.adresa as string | null,
+        grad: kupac.grad as string | null,
+      },
+      iznos,
+      pozivNaBroj,
+      firma: FIRMA,
+    });
 
-  await posaljiEmail({
-    to: kupac.email as string,
-    subject,
-    html: emailHtml,
-    attachment: {
+    pdfAttachment = {
       content: pdfBuffer,
       filename: `profaktura-${profakturaBroj}.pdf`,
       contentType: 'application/pdf',
-    },
-  });
+    };
+
+    const emailHtml = generisiHostingEmailBody(
+      kupac.ime as string,
+      datumFormatiran,
+      danaPreostalo,
+      iznos,
+      firma,
+      FIRMA.racun1,
+      FIRMA.banka1,
+      FIRMA.racun2,
+      FIRMA.banka2,
+      pozivNaBroj,
+    );
+
+    const subject = danaPreostalo <= 7
+      ? `⚠️ Hitno: Obnova hostinga za ${danaPreostalo} ${danaPreostalo === 1 ? 'dan' : 'dana'} - ${prikazNaziv}`
+      : `Podsetnik za obnovu hostinga - ${podsetnik.label} - ${prikazNaziv}`;
+
+    await posaljiEmail({
+      to: kupac.email as string,
+      subject,
+      html: emailHtml,
+      attachment: pdfAttachment,
+    });
+  } else {
+    // Kes: samo jednostavan podsetnik
+    const emailHtml = generisiHostingEmailBody(
+      kupac.ime as string,
+      datumFormatiran,
+      danaPreostalo,
+      iznos,
+    );
+
+    const subject = danaPreostalo <= 7
+      ? `⚠️ Hitno: Obnova hostinga za ${danaPreostalo} ${danaPreostalo === 1 ? 'dan' : 'dana'} - ${prikazNaziv}`
+      : `Podsetnik za obnovu hostinga - ${podsetnik.label} - ${prikazNaziv}`;
+
+    await posaljiEmail({
+      to: kupac.email as string,
+      subject,
+      html: emailHtml,
+    });
+  }
 
   // Označi podsetnik kao poslat
   await supabase

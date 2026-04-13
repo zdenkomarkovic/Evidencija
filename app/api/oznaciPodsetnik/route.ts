@@ -26,6 +26,8 @@ export async function POST(request: NextRequest) {
 
       const azuriranRata = await updateRata(id, {
         podsetnik_poslat: false,
+        podsetnik_7_poslat: false,
+        podsetnik_1_poslat: false,
       });
 
       return NextResponse.json({

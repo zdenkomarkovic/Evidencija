@@ -229,34 +229,34 @@ export default function HostingTabela({
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 #
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Kupac
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Email
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Datum početka
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Početak
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Datum isteka
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Istek
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Preostalo dana
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Dana
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status / Datum
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Iznos
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Podsetnici
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Podstn.
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Akcije
               </th>
             </tr>
@@ -272,83 +272,58 @@ export default function HostingTabela({
                     !h.placeno && dana <= 7 ? 'bg-red-50' : !h.placeno && dana <= 30 ? 'bg-yellow-50' : ''
                   }`}
                 >
-                  <td className={`px-6 py-4 whitespace-nowrap ${borderKupca(h.kupacId?.nacinPlacanja)}`}>
-                    <div className="text-sm font-medium text-gray-500">
-                      {index + 1}
-                    </div>
+                  <td className={`px-2 py-2 whitespace-nowrap ${borderKupca(h.kupacId?.nacinPlacanja)}`}>
+                    <div className="text-sm text-gray-500">{index + 1}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-2 py-2 whitespace-nowrap">
                     <div
                       className={`text-sm font-medium text-gray-900 ${
                         onKupacKlik && h.kupacId?._id ? 'cursor-pointer hover:text-indigo-600 hover:underline' : ''
                       }`}
-                      onClick={() => {
-                        if (onKupacKlik && h.kupacId?._id) {
-                          onKupacKlik(h.kupacId._id);
-                        }
-                      }}
+                      onClick={() => { if (onKupacKlik && h.kupacId?._id) onKupacKlik(h.kupacId._id); }}
                     >
                       {h.kupacId?.ime || 'N/A'}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-2 py-2 whitespace-nowrap">
                     {h.kupacId?.email ? (
-                      <a
-                        href={`mailto:${h.kupacId.email}`}
-                        className="text-sm text-indigo-600 hover:text-indigo-900 hover:underline"
-                      >
+                      <a href={`mailto:${h.kupacId.email}`} className="text-sm text-indigo-600 hover:underline">
                         {h.kupacId.email}
                       </a>
                     ) : (
-                      <div className="text-sm text-gray-500">N/A</div>
+                      <span className="text-sm text-gray-400">N/A</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {h.datumPocetka ? formatDatum(h.datumPocetka) : 'N/A'}
+                  <td className="px-2 py-2 whitespace-nowrap">
+                    <div className="text-sm text-gray-700">
+                      {h.datumPocetka ? formatDatum(h.datumPocetka) : '—'}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {formatDatum(h.datumObnavljanja)}
-                    </div>
+                  <td className="px-2 py-2 whitespace-nowrap">
+                    <div className="text-sm text-gray-700">{formatDatum(h.datumObnavljanja)}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-2 py-2 whitespace-nowrap">
                     <div className={`text-sm font-semibold ${getStatusColor(dana)}`}>
-                      {dana < 0 ? (
-                        <span>Isteklo pre {Math.abs(dana)} dana</span>
-                      ) : dana === 0 ? (
-                        <span>Ističe danas!</span>
-                      ) : (
-                        <span>{dana} dana</span>
-                      )}
+                      {dana < 0 ? `Isteklo ${Math.abs(dana)}d` : dana === 0 ? 'Danas!' : `${dana}d`}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex flex-col gap-1">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          h.placeno
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
+                  <td className="px-2 py-2 whitespace-nowrap">
+                    <div className="flex flex-col gap-0.5">
+                      <span className={`px-1.5 py-0.5 inline-flex text-xs font-semibold rounded-full ${h.placeno ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                         {h.placeno ? 'Plaćeno' : 'Neplaćeno'}
                       </span>
                       {h.datumPlacanja && (
-                        <div className="text-xs text-gray-500">
-                          {formatDatum(h.datumPlacanja)}
-                        </div>
+                        <div className="text-xs text-gray-400">{formatDatum(h.datumPlacanja)}</div>
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-semibold text-gray-900">
-                      {h.iznos ? `${h.iznos.toLocaleString('de-DE', { minimumFractionDigits: 2 })} RSD` : '—'}
+                  <td className="px-2 py-2 whitespace-nowrap">
+                    <div className="text-xs font-semibold text-gray-900">
+                      {h.iznos ? h.iznos.toLocaleString('de-DE', { minimumFractionDigits: 2 }) : '—'}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex gap-1 items-center">
+                  <td className="px-2 py-2 whitespace-nowrap">
+                    <div className="flex gap-0.5 items-center">
                       {[
                         { label: '30', poslat: h.podsetnik30Poslat, title: '30 dana pre' },
                         { label: '14', poslat: h.podsetnik14Poslat, title: '14 dana pre' },
@@ -358,10 +333,8 @@ export default function HostingTabela({
                         <span
                           key={p.label}
                           title={`Podsetnik ${p.title}: ${p.poslat ? 'poslat' : 'nije poslat'}`}
-                          className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold transition-all ${
-                            p.poslat
-                              ? 'bg-green-500 text-white'
-                              : 'bg-gray-100 text-gray-300'
+                          className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold transition-all ${
+                            p.poslat ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-300'
                           }`}
                         >
                           {p.label}
@@ -369,36 +342,20 @@ export default function HostingTabela({
                       ))}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2 flex-wrap">
+                  <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
+                    <div className="flex gap-1.5 flex-wrap">
                       {!h.placeno && (
-                        <button
-                          onClick={() => onOznaciPlaceno(h._id)}
-                          className="text-green-600 hover:text-green-900"
-                        >
+                        <button onClick={() => onOznaciPlaceno(h._id)} className="text-green-600 hover:text-green-900">
                           Plaćeno
                         </button>
                       )}
                       {h.podsetnikPoslat && (
-                        <button
-                          onClick={() => onResetujPodsetnik(h._id)}
-                          className="text-indigo-600 hover:text-indigo-900"
-                        >
+                        <button onClick={() => onResetujPodsetnik(h._id)} className="text-indigo-600 hover:text-indigo-900">
                           Resetuj
                         </button>
                       )}
-                      <button
-                        onClick={() => onEdit(h)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        Izmeni
-                      </button>
-                      <button
-                        onClick={() => onDelete(h._id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Obriši
-                      </button>
+                      <button onClick={() => onEdit(h)} className="text-blue-600 hover:text-blue-900">Izmeni</button>
+                      <button onClick={() => onDelete(h._id)} className="text-red-600 hover:text-red-900">Obriši</button>
                     </div>
                   </td>
                 </tr>

@@ -42,6 +42,8 @@ interface GoogleAds {
   datumZaustavljanja: string | null;
   datumPonovnogPokretanja: string | null;
   nastavci: Nastavak[];
+  podsetnik7Poslat?: boolean;
+  podsetnik1Poslat?: boolean;
 }
 
 interface GoogleAdsTabelaProps {
@@ -253,6 +255,28 @@ export default function GoogleAdsTabela({
     }
   }, [dostupniMeseci, izabraniMesec]);
 
+  // Vraća bazni datum za "buduci" period: kraj poslednjeg nastavka pre datog meseca,
+  // ili datum_isteka kampanje ako nema nastavaka pre tog meseca.
+  const getBazuZaBuduci = (kampanja: GoogleAds, mesecKey: string): Date => {
+    const istekKampanje = new Date(kampanja.datumIsteka);
+    if (!kampanja.nastavci || kampanja.nastavci.length === 0) return istekKampanje;
+
+    const nastavciPre = kampanja.nastavci
+      .filter(n => {
+        const pn = new Date(n.datum);
+        const mn = `${pn.getFullYear()}-${String(pn.getMonth() + 1).padStart(2, '0')}`;
+        return mn < mesecKey;
+      })
+      .sort((a, b) => new Date(b.datum).getTime() - new Date(a.datum).getTime());
+
+    if (nastavciPre.length === 0) return istekKampanje;
+
+    const posledni = new Date(nastavciPre[0].datum);
+    const krajPoslednjeg = new Date(posledni);
+    krajPoslednjeg.setMonth(posledni.getMonth() + 1);
+    return krajPoslednjeg;
+  };
+
   // Filter po izabranom mesecu i sortiranje po datumu pocetka perioda u aktuelnom mesecu
   const konacneKampanje = [...(kampanjePoMesecima[izabraniMesec]?.kampanje || [])].sort((a, b) => {
     // Funkcija koja vraća datum početka perioda za datu kampanju u izabranom mesecu
@@ -278,11 +302,12 @@ export default function GoogleAdsTabela({
         }
       }
 
-      // Ako nema nastavka, izračunaj datum budućeg perioda
+      // Ako nema nastavka, izračunaj datum budućeg perioda od kraja poslednjeg nastavka
+      const baza = getBazuZaBuduci(kampanja, izabraniMesec);
       const [godina, mesec] = izabraniMesec.split('-').map(Number);
-      const meseciBrojac = (godina - istekKampanje.getFullYear()) * 12 + (mesec - 1 - istekKampanje.getMonth());
-      const pocetakNovogPerioda = new Date(istekKampanje);
-      pocetakNovogPerioda.setMonth(istekKampanje.getMonth() + meseciBrojac);
+      const meseciBrojac = (godina - baza.getFullYear()) * 12 + (mesec - 1 - baza.getMonth());
+      const pocetakNovogPerioda = new Date(baza);
+      pocetakNovogPerioda.setMonth(baza.getMonth() + meseciBrojac);
 
       return pocetakNovogPerioda.getTime();
     };
@@ -356,92 +381,99 @@ export default function GoogleAdsTabela({
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="mb-6">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
-            <h2 className="text-2xl font-bold text-gray-800">Google Ads Kampanje</h2>
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+          <h2 className="text-2xl font-bold text-gray-800">Google Ads Kampanje</h2>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <input
               type="text"
               placeholder="Pretraži kampanje..."
               value={pretraga}
               onChange={(e) => setPretraga(e.target.value)}
-              className="w-full lg:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full sm:flex-1 lg:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-          </div>
-
-          {/* Filteri */}
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-            <div className="flex flex-col sm:w-48">
-              <label className="text-sm font-medium text-gray-700 mb-1">Status kampanje</label>
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as 'sve' | 'aktivne' | 'neaktivne')}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-              >
-                <option value="aktivne">Aktivne</option>
-                <option value="neaktivne">Neaktivne</option>
-                <option value="sve">Sve kampanje</option>
-              </select>
-            </div>
-
-            {/* Paginacija po mesecima */}
-            {dostupniMeseci.length > 0 && (
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={idiNaPrethodniMesec}
-                  disabled={jePrviMesec}
-                  className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                    jePrviMesec
-                      ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  ← Prethodni
-                </button>
-                <div className="px-4 py-2 bg-indigo-50 border border-indigo-200 rounded-lg">
-                  <span className="text-sm font-semibold text-indigo-900 capitalize">
-                    {getMesecNaziv(izabraniMesec)}
-                  </span>
-                </div>
-                <button
-                  onClick={idiNaSldeciMesec}
-                  disabled={jePosledniMesec}
-                  className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                    jePosledniMesec
-                      ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  Sledeći →
-                </button>
-              </div>
-            )}
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value as 'sve' | 'aktivne' | 'neaktivne')}
+              className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="aktivne">Aktivne kampanje</option>
+              <option value="neaktivne">Neaktivne kampanje</option>
+              <option value="sve">Sve kampanje</option>
+            </select>
           </div>
         </div>
       </div>
+
+      {/* Navigacija po mesecima */}
+      {dostupniMeseci.length > 0 && (
+        <div className="mb-6 bg-gray-50 p-4 rounded-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <button
+              onClick={idiNaPrethodniMesec}
+              disabled={jePrviMesec}
+              className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
+            >
+              ← Prethodni mesec
+            </button>
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+              <span className="text-base sm:text-lg font-semibold text-gray-700 capitalize">
+                {getMesecNaziv(izabraniMesec)}
+              </span>
+              <select
+                value={izabraniMesec}
+                onChange={(e) => setIzabraniMesec(e.target.value)}
+                className="w-full sm:w-auto px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-sm sm:text-base"
+              >
+                {dostupniMeseci.map((mesec) => (
+                  <option key={mesec} value={mesec}>
+                    {getMesecNaziv(mesec)}
+                  </option>
+                ))}
+              </select>
+              <span className="text-xs sm:text-sm text-gray-500">
+                ({konacneKampanje.length} {konacneKampanje.length === 1 ? 'kampanja' : 'kampanja'})
+              </span>
+            </div>
+            <button
+              onClick={idiNaSldeciMesec}
+              disabled={jePosledniMesec}
+              className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
+            >
+              Sledeći mesec →
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 #
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Kupac
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Kampanja / Google nalog
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Kampanja / Nalog
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Period
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Dana
+              </th>
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Iznos
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Podstn.
+              </th>
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Akcije
               </th>
             </tr>
@@ -497,12 +529,12 @@ export default function GoogleAdsTabela({
                   }
                 }
 
-                // Ako nema nastavka za ovaj mesec, izračunaj period koji bi trebalo da postoji
-                // Koliko meseci je prošlo od isteka osnovnog perioda?
-                const meseciBrojac = (godina - istekKampanje.getFullYear()) * 12 + (mesec - 1 - istekKampanje.getMonth());
+                // Ako nema nastavka za ovaj mesec, izračunaj period od kraja poslednjeg nastavka
+                const baza = getBazuZaBuduci(kampanja, izabraniMesec);
+                const meseciBrojac = (godina - baza.getFullYear()) * 12 + (mesec - 1 - baza.getMonth());
 
-                const pocetakNovogPerioda = new Date(istekKampanje);
-                pocetakNovogPerioda.setMonth(istekKampanje.getMonth() + meseciBrojac);
+                const pocetakNovogPerioda = new Date(baza);
+                pocetakNovogPerioda.setMonth(baza.getMonth() + meseciBrojac);
 
                 const krajNovogPerioda = new Date(pocetakNovogPerioda);
                 krajNovogPerioda.setMonth(krajNovogPerioda.getMonth() + 1);
@@ -594,193 +626,141 @@ export default function GoogleAdsTabela({
                       : ''
                   }`}
                 >
-                  <td className={`px-4 py-4 whitespace-nowrap ${borderKupca(kampanja.kupacId?.nacinPlacanja)}`}>
-                    <div className="text-sm font-semibold text-gray-600">
-                      {index + 1}.
-                    </div>
+                  <td className={`px-2 py-2 whitespace-nowrap ${borderKupca(kampanja.kupacId?.nacinPlacanja)}`}>
+                    <div className="text-sm text-gray-500">{index + 1}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex flex-col gap-1">
-                      {imaNeplacene && (
-                        <div className="flex items-center gap-1 mb-1">
-                          <span className="px-2 py-0.5 bg-red-600 text-white text-xs font-bold rounded flex items-center gap-1">
-                            ⚠️ Prethodni period nije plaćen
-                          </span>
-                        </div>
-                      )}
-                      <div
-                        className={`text-sm font-medium text-gray-900 ${
-                          onKupacKlik && kampanja.kupacId?._id ? 'cursor-pointer hover:text-indigo-600 hover:underline' : ''
-                        }`}
-                        onClick={() => {
-                          if (onKupacKlik && kampanja.kupacId?._id) {
-                            onKupacKlik(kampanja.kupacId._id);
-                          }
-                        }}
-                      >
-                        {kampanja.kupacId?.ime || 'N/A'}
-                      </div>
-                      {kampanja.kupacId?.email && (
-                        <a
-                          href={`mailto:${kampanja.kupacId.email}`}
-                          className="text-sm text-indigo-600 hover:text-indigo-900 hover:underline"
-                        >
-                          {kampanja.kupacId.email}
-                        </a>
-                      )}
-                    </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="text-sm font-semibold text-gray-900">{kampanja.imeKampanje}</div>
-                        <span
-                          className={`px-2 py-0.5 text-xs font-semibold rounded ${
-                            kampanja.aktivna
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-600'
-                          }`}
-                        >
-                          {kampanja.aktivna ? 'Aktivna' : 'Stopirana'}
+                  <td className="px-2 py-2 whitespace-nowrap">
+                    {imaNeplacene && (
+                      <div className="mb-1">
+                        <span className="px-1.5 py-0.5 bg-red-600 text-white text-[10px] font-bold rounded">
+                          ⚠️ Prethodni nije plaćen
                         </span>
                       </div>
-                      <div className="text-sm text-gray-500">{kampanja.imeGoogleNaloga}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {formatDatum(period.datumPocetka)} - {formatDatum(period.datumIsteka)}
-                      </div>
-                      {!period.placeno && (
-                        <div className={`text-xs font-semibold ${
-                          period.tip === 'buduci'
-                            ? 'text-blue-600'
-                            : getStatusColor(dana)
-                        }`}>
-                          {period.tip === 'buduci' ? (
-                            danaDoPocetkaValue !== null && (
-                              danaDoPocetkaValue > 0 ? (
-                                <span>Počinje za {danaDoPocetkaValue} dana</span>
-                              ) : danaDoPocetkaValue === 0 ? (
-                                <span>Počinje danas!</span>
-                              ) : (
-                                <span>Trebalo je da počne pre {Math.abs(danaDoPocetkaValue)} dana</span>
-                              )
-                            )
-                          ) : dana < 0 ? (
-                            <span>Isteklo pre {Math.abs(dana)} dana</span>
-                          ) : dana === 0 ? (
-                            <span>Ističe danas!</span>
-                          ) : (
-                            <span>{dana} dana</span>
-                          )}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-semibold text-gray-900">
-                        {period.iznos.toLocaleString('sr-RS')} RSD
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              period.placeno
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-red-100 text-red-800'
-                            }`}
-                          >
-                            {period.placeno ? 'Plaćeno' : 'Neplaćeno'}
-                          </span>
-                          {!period.placeno && (
-                            <button
-                              onClick={() => {
-                                if (period.tip === 'osnovni') {
-                                  setPendingPlaceno({
-                                    tip: 'osnovni',
-                                    kampanjaId: kampanja._id,
-                                    naslov: `Označi plaćeno - ${kampanja.imeKampanje} (Osnovni period)`,
-                                  });
-                                } else {
-                                  setPendingPlaceno({
-                                    tip: 'nastavak',
-                                    kampanjaId: kampanja._id,
-                                    nastavakId: period.nastavakId,
-                                    datumPocetka: period.datumPocetka,
-                                    iznos: period.iznos,
-                                    naslov: `Označi plaćeno - ${kampanja.imeKampanje} (Nastavak)`,
-                                  });
-                                }
-                                setPlacenoModalOpen(true);
-                              }}
-                              className="text-green-600 hover:text-green-900 text-xs"
-                            >
-                              Označi plaćeno
-                            </button>
-                          )}
-                        </div>
-                        {period.placeno && (
-                          <div className="flex flex-col gap-1">
-                            {period.datumPlacanja && (
-                              <div className="text-xs text-gray-500">
-                                Plaćeno: {formatDatum(period.datumPlacanja)}
-                              </div>
-                            )}
-                            <button
-                              onClick={() => {
-                                if (period.tip === 'osnovni') {
-                                  setPendingPonisti({
-                                    tip: 'osnovni',
-                                    kampanjaId: kampanja._id,
-                                    naslov: `${kampanja.imeKampanje} (Osnovni period)`,
-                                  });
-                                } else if (period.nastavakId) {
-                                  setPendingPonisti({
-                                    tip: 'nastavak',
-                                    kampanjaId: kampanja._id,
-                                    nastavakId: period.nastavakId,
-                                    naslov: `${kampanja.imeKampanje} (Nastavak)`,
-                                  });
-                                }
-                                setPonistiModalOpen(true);
-                              }}
-                              className="text-red-600 hover:text-red-900 text-xs self-start"
-                            >
-                              Poništi plaćeno
-                            </button>
-                          </div>
+                    )}
+                    <div
+                      className={`text-sm font-medium text-gray-900 ${
+                        onKupacKlik && kampanja.kupacId?._id ? 'cursor-pointer hover:text-indigo-600 hover:underline' : ''
+                      }`}
+                      onClick={() => { if (onKupacKlik && kampanja.kupacId?._id) onKupacKlik(kampanja.kupacId._id); }}
+                    >
+                      {kampanja.kupacId?.ime || 'N/A'}
+                    </div>
+                    {kampanja.kupacId?.email && (
+                      <a href={`mailto:${kampanja.kupacId.email}`} className="text-xs text-indigo-600 hover:underline">
+                        {kampanja.kupacId.email}
+                      </a>
+                    )}
+                  </td>
+                  <td className="px-2 py-2">
+                    <div className="flex items-center gap-1 flex-wrap">
+                      <div className="text-sm font-semibold text-gray-900">{kampanja.imeKampanje}</div>
+                      <span className={`px-1.5 py-0.5 text-[10px] font-semibold rounded ${kampanja.aktivna ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+                        {kampanja.aktivna ? 'Aktivna' : 'Stopirana'}
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-500">{kampanja.imeGoogleNaloga}</div>
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap">
+                    <div className="text-xs text-gray-700">
+                      {formatDatum(period.datumPocetka)}
+                    </div>
+                    <div className="text-xs text-gray-700">
+                      {formatDatum(period.datumIsteka)}
+                    </div>
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap">
+                    {period.tip === 'buduci' ? (
+                      <div className="text-xs font-semibold text-blue-600">
+                        {danaDoPocetkaValue !== null && (
+                          danaDoPocetkaValue > 0 ? `Za ${danaDoPocetkaValue}d` :
+                          danaDoPocetkaValue === 0 ? 'Danas!' :
+                          `Kasni ${Math.abs(danaDoPocetkaValue)}d`
                         )}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex flex-col gap-2">
-                        <button
-                          onClick={() => onEdit(kampanja)}
-                          className="text-blue-600 hover:text-blue-900"
+                    ) : (
+                      <div className={`text-sm font-semibold ${getStatusColor(dana)}`}>
+                        {dana < 0 ? `Isteklo ${Math.abs(dana)}d` : dana === 0 ? 'Danas!' : `${dana}d`}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap">
+                    <div className="text-xs font-semibold text-gray-900">
+                      {period.iznos.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
+                    </div>
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap">
+                    <div className="flex flex-col gap-0.5">
+                      <span className={`px-1.5 py-0.5 inline-flex text-xs font-semibold rounded-full ${period.placeno ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {period.placeno ? 'Plaćeno' : 'Neplaćeno'}
+                      </span>
+                      {period.datumPlacanja && (
+                        <div className="text-xs text-gray-400">{formatDatum(period.datumPlacanja)}</div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap">
+                    <div className="flex gap-0.5 items-center">
+                      {[
+                        { label: '7', poslat: kampanja.podsetnik7Poslat, title: '7 dana pre' },
+                        { label: '1', poslat: kampanja.podsetnik1Poslat, title: '1 dan pre'  },
+                      ].map((p) => (
+                        <span
+                          key={p.label}
+                          title={`Podsetnik ${p.title}: ${p.poslat ? 'poslat' : 'nije poslat'}`}
+                          className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold transition-all ${
+                            p.poslat ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-300'
+                          }`}
                         >
-                          Izmeni
-                        </button>
+                          {p.label}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
+                    <div className="flex gap-1.5 flex-wrap">
+                      {!period.placeno && (
                         <button
                           onClick={() => {
-                            setPendingToggle({
-                              kampanjaId: kampanja._id,
-                              trenutnoAktivna: kampanja.aktivna,
-                              imeKampanje: kampanja.imeKampanje,
-                            });
-                            setToggleAktivnaModalOpen(true);
+                            if (period.tip === 'osnovni') {
+                              setPendingPlaceno({ tip: 'osnovni', kampanjaId: kampanja._id, naslov: `${kampanja.imeKampanje} (Osnovni)` });
+                            } else {
+                              setPendingPlaceno({ tip: 'nastavak', kampanjaId: kampanja._id, nastavakId: period.nastavakId, datumPocetka: period.datumPocetka, iznos: period.iznos, naslov: `${kampanja.imeKampanje} (Nastavak)` });
+                            }
+                            setPlacenoModalOpen(true);
                           }}
-                          className={kampanja.aktivna ? "text-orange-600 hover:text-orange-900" : "text-green-600 hover:text-green-900"}
+                          className="text-green-600 hover:text-green-900"
                         >
-                          {kampanja.aktivna ? 'Stopiraj' : 'Aktiviraj'}
+                          Plaćeno
                         </button>
+                      )}
+                      {period.placeno && (
                         <button
-                          onClick={() => onDelete(kampanja._id)}
-                          className="text-red-600 hover:text-red-900"
+                          onClick={() => {
+                            if (period.tip === 'osnovni') {
+                              setPendingPonisti({ tip: 'osnovni', kampanjaId: kampanja._id, naslov: `${kampanja.imeKampanje} (Osnovni)` });
+                            } else if (period.nastavakId) {
+                              setPendingPonisti({ tip: 'nastavak', kampanjaId: kampanja._id, nastavakId: period.nastavakId, naslov: `${kampanja.imeKampanje} (Nastavak)` });
+                            }
+                            setPonistiModalOpen(true);
+                          }}
+                          className="text-orange-600 hover:text-orange-900"
                         >
-                          Obriši
+                          Poništi
                         </button>
-                      </div>
-                    </td>
+                      )}
+                      <button
+                        onClick={() => {
+                          setPendingToggle({ kampanjaId: kampanja._id, trenutnoAktivna: kampanja.aktivna, imeKampanje: kampanja.imeKampanje });
+                          setToggleAktivnaModalOpen(true);
+                        }}
+                        className={kampanja.aktivna ? 'text-orange-600 hover:text-orange-900' : 'text-green-600 hover:text-green-900'}
+                      >
+                        {kampanja.aktivna ? 'Stopiraj' : 'Aktiviraj'}
+                      </button>
+                      <button onClick={() => onEdit(kampanja)} className="text-blue-600 hover:text-blue-900">Izmeni</button>
+                      <button onClick={() => onDelete(kampanja._id)} className="text-red-600 hover:text-red-900">Obriši</button>
+                    </div>
+                  </td>
                   </tr>
               );
             })}
@@ -846,10 +826,11 @@ export default function GoogleAdsTabela({
             }
 
             if (!iznos) {
+              const baza = getBazuZaBuduci(kampanja, izabraniMesec);
               const [godina, mesec] = izabraniMesec.split('-').map(Number);
-              const meseciBrojac = (godina - istekKampanje.getFullYear()) * 12 + (mesec - 1 - istekKampanje.getMonth());
-              const pocetakNovogPerioda = new Date(istekKampanje);
-              pocetakNovogPerioda.setMonth(istekKampanje.getMonth() + meseciBrojac);
+              const meseciBrojac = (godina - baza.getFullYear()) * 12 + (mesec - 1 - baza.getMonth());
+              const pocetakNovogPerioda = new Date(baza);
+              pocetakNovogPerioda.setMonth(baza.getMonth() + meseciBrojac);
 
               let iznosZaKoriscenje = kampanja.iznosNastavka;
               if (kampanja.datumPrimeneIznosaNavstavka) {
