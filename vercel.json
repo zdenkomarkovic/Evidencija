@@ -1,15 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/podsetnici",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/podsetnici-hosting",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/podsetnici-google-ads",
+      "path": "/api/podsetnici-svi",
       "schedule": "0 9 * * *"
     }
   ]
