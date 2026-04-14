@@ -24,6 +24,8 @@ interface Rata {
   datumPlacanja: string | null;
   nacinPlacanja: string | null;
   podsetnikPoslat: boolean;
+  podsetnik7Poslat?: boolean;
+  podsetnik1Poslat?: boolean;
 }
 
 interface RateTabelaProps {
@@ -313,15 +315,24 @@ export default function RateTabela({
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      rata.podsetnikPoslat
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    {rata.podsetnikPoslat ? 'Poslat' : 'Nije poslat'}
-                  </span>
+                  <div className="flex gap-0.5 items-center">
+                    {[
+                      { label: '7d', poslat: rata.podsetnik7Poslat, title: '7 dana pre' },
+                      { label: '1d', poslat: rata.podsetnik1Poslat, title: '1 dan pre'  },
+                    ].map((p) => (
+                      <span
+                        key={p.label}
+                        title={p.title}
+                        className={`inline-flex items-center justify-center w-7 h-5 rounded text-xs font-bold ${
+                          p.poslat
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-200 text-gray-400'
+                        }`}
+                      >
+                        {p.label}
+                      </span>
+                    ))}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex gap-2 flex-wrap">
@@ -333,7 +344,7 @@ export default function RateTabela({
                         Plaćeno
                       </button>
                     )}
-                    {rata.podsetnikPoslat && (
+                    {(rata.podsetnikPoslat || rata.podsetnik7Poslat || rata.podsetnik1Poslat) && (
                       <button
                         onClick={() => onResetujPodsetnik(rata._id)}
                         className="text-indigo-600 hover:text-indigo-900"

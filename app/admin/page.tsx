@@ -20,6 +20,7 @@ import FaktureTabela, { Faktura } from "@/components/admin/FaktureTabela";
 import DodajFakturuModal from "@/components/admin/DodajFakturuModal";
 import IzmeniFaktureModal from "@/components/admin/IzmeniFaktureModal";
 import KatalogUslugarTabela from "@/components/admin/KatalogUslugarTabela";
+import PregledPrihoda from "@/components/admin/PregledPrihoda";
 
 interface Kupac {
   _id: string;
@@ -50,6 +51,8 @@ interface Rata {
   datumPlacanja: string | null;
   nacinPlacanja: string | null;
   podsetnikPoslat: boolean;
+  podsetnik7Poslat?: boolean;
+  podsetnik1Poslat?: boolean;
 }
 
 interface Hosting {
@@ -113,7 +116,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [prvoUcitavanje, setPrvoUcitavanje] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    "kupci" | "rate" | "hosting" | "googleads" | "fakture" | "katalog" | "arhivirani"
+    "kupci" | "rate" | "hosting" | "googleads" | "fakture" | "katalog" | "arhivirani" | "pregled"
   >("kupci");
 
   // Fakture state
@@ -879,6 +882,16 @@ export default function AdminPage() {
                 Katalog usluga
               </button>
               <button
+                onClick={() => setActiveTab("pregled")}
+                className={`${
+                  activeTab === "pregled"
+                    ? "border-green-500 text-green-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+              >
+                📊 Pregled prihoda
+              </button>
+              <button
                 onClick={() => setActiveTab("arhivirani")}
                 className={`${
                   activeTab === "arhivirani"
@@ -946,6 +959,13 @@ export default function AdminPage() {
               onDelete={handleDeleteFaktura}
               onOznaciPlacenu={handleOznaciPlacenuFakturu}
               onPretvoriUFakturu={handlePretvoriUFakturu}
+            />
+          )}
+          {activeTab === "pregled" && (
+            <PregledPrihoda
+              rate={rate}
+              hosting={hosting}
+              kampanje={kampanje}
             />
           )}
           {activeTab === "katalog" && (
