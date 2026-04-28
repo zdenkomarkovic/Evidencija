@@ -55,6 +55,7 @@ interface GoogleAdsTabelaProps {
   onPonistiPlacenoOsnovni: (kampanjaId: string) => void;
   onPonistiPlacenoNastavak: (kampanjaId: string, nastavakId: string) => void;
   onToggleAktivna: (kampanjaId: string, aktivna: boolean, datum?: string) => void;
+  onResetujPodsetnik?: (kampanjaId: string) => void;
   onKupacKlik?: (kupacId: string) => void;
 }
 
@@ -67,6 +68,7 @@ export default function GoogleAdsTabela({
   onPonistiPlacenoOsnovni,
   onPonistiPlacenoNastavak,
   onToggleAktivna,
+  onResetujPodsetnik,
   onKupacKlik,
 }: GoogleAdsTabelaProps) {
   const [pretraga, setPretraga] = useState('');
@@ -755,6 +757,11 @@ export default function GoogleAdsTabela({
                       >
                         {kampanja.aktivna ? 'Stopiraj' : 'Aktiviraj'}
                       </button>
+                      {onResetujPodsetnik && (kampanja.podsetnik7Poslat || kampanja.podsetnik1Poslat) && (
+                        <button onClick={() => onResetujPodsetnik(kampanja._id)} className="text-indigo-600 hover:text-indigo-900">
+                          Resetuj
+                        </button>
+                      )}
                       <button onClick={() => onEdit(kampanja)} className="text-blue-600 hover:text-blue-900">Izmeni</button>
                       <button onClick={() => onDelete(kampanja._id)} className="text-red-600 hover:text-red-900">Obriši</button>
                     </div>

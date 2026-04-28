@@ -36,9 +36,9 @@ export async function GET(request: NextRequest) {
         .from('rate')
         .select('*, kupci (*)')
         .eq('placeno', false)
-        .eq(podsetnik.polje, false)
-        .gte('datum_dospeca', danas.toISOString())
-        .lte('datum_dospeca', granica.toISOString());
+        .not(podsetnik.polje, 'is', true)
+        .gte('datum_dospeca', danas.toISOString().split('T')[0])
+        .lte('datum_dospeca', granica.toISOString().split('T')[0]);
 
       if (error) {
         console.error(`Greška pri upitu za ${podsetnik.label}:`, error);

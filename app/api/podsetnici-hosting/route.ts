@@ -195,10 +195,10 @@ export async function GET(request: NextRequest) {
       const { data: hostingZaObnovu, error } = await supabase
         .from('hosting')
         .select('*, kupci (*)')
-        .eq(podsetnik.polje, false)
+        .not(podsetnik.polje, 'is', true)
         .eq('placeno', false)
-        .gte('datum_obnavljanja', danas.toISOString())
-        .lte('datum_obnavljanja', granica.toISOString());
+        .gte('datum_obnavljanja', danas.toISOString().split('T')[0])
+        .lte('datum_obnavljanja', granica.toISOString().split('T')[0]);
 
       if (error) {
         console.error(`Greška pri upitu za ${podsetnik.label}:`, error);

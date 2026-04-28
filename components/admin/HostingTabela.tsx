@@ -349,7 +349,7 @@ export default function HostingTabela({
                           Plaćeno
                         </button>
                       )}
-                      {h.podsetnikPoslat && (
+                      {(h.podsetnikPoslat || h.podsetnik30Poslat || h.podsetnik14Poslat || h.podsetnik7Poslat || h.podsetnik1Poslat) && (
                         <button onClick={() => onResetujPodsetnik(h._id)} className="text-indigo-600 hover:text-indigo-900">
                           Resetuj
                         </button>

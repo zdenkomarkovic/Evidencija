@@ -342,6 +342,24 @@ export default function AdminPage() {
     }
   };
 
+  const resetujPodsetnikGoogleAds = async (kampanjaId: string) => {
+    try {
+      const res = await fetch("/api/oznaciPodsetnik", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: kampanjaId, type: "google-ads" }),
+      });
+
+      if (res.ok) {
+        ucitajPodatke();
+      } else {
+        console.error("Greška pri resetovanju podsetnika za Google Ads");
+      }
+    } catch (error) {
+      console.error("Greška:", error);
+    }
+  };
+
   const oznaciPlacenoHosting = async (hostingId: string) => {
     try {
       const res = await fetch("/api/hosting/oznaciPlaceno", {
@@ -949,6 +967,7 @@ export default function AdminPage() {
               onPonistiPlacenoOsnovni={ponistiPlacenoOsnovniGoogleAds}
               onPonistiPlacenoNastavak={ponistiPlacenoNastavakGoogleAds}
               onToggleAktivna={toggleAktivnaGoogleAds}
+              onResetujPodsetnik={resetujPodsetnikGoogleAds}
               onKupacKlik={handleKupacKlik}
             />
           )}
@@ -1046,6 +1065,7 @@ export default function AdminPage() {
                   onPonistiPlacenoOsnovni={ponistiPlacenoOsnovniGoogleAds}
                   onPonistiPlacenoNastavak={ponistiPlacenoNastavakGoogleAds}
                   onToggleAktivna={toggleAktivnaGoogleAds}
+                  onResetujPodsetnik={resetujPodsetnikGoogleAds}
                   onKupacKlik={handleKupacKlik}
                 />
               </div>
