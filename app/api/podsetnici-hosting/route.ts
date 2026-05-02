@@ -174,6 +174,57 @@ async function posaljiPodsetnik(
   };
 }
 
+export async function pokreniPodsetnike() {
+  const danas = new Date();
+  danas.setHours(0, 0, 0, 0);
+
+  const rezultati = [];
+
+  for (const podsetnik of PODSETNICI) {
+    const granica = new Date(danas);
+    granica.setDate(granica.getDate() + podsetnik.dana);
+
+    const { data: hostingZaObnovu, error } = await supabase
+      .from('hosting')
+      .select('*, kupci (*)')
+      .not(podsetnik.polje, 'is', true)
+      .eq('placeno', false)
+      .gte('datum_obnavljanja', danas.toISOString().split('T')[0])
+      .lte('datum_obnavljanja', granica.toISOString().split('T')[0]);
+
+    if (error) {
+      console.error(`Greška pri upitu za ${podsetnik.label}:`, error);
+      continue;
+    }
+
+    for (const hosting of hostingZaObnovu) {
+      const kupac = hosting.kupci;
+
+      if (!kupac?.email) {
+        console.warn(`Kupac nema email za hosting: ${hosting.id}`);
+        continue;
+      }
+
+      try {
+        const rezultat = await posaljiPodsetnik(hosting, kupac, podsetnik);
+        rezultati.push(rezultat);
+      } catch (err) {
+        console.error(`Greška pri slanju podsetnika (${podsetnik.label}) za hosting ${hosting.id}:`, err);
+        rezultati.push({
+          hostingId: hosting.id,
+          kupac: kupac.ime,
+          email: kupac.email,
+          podsetnik: podsetnik.label,
+          uspesno: false,
+          greska: err instanceof Error ? err.message : String(err),
+        });
+      }
+    }
+  }
+
+  return rezultati;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');
@@ -183,52 +234,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Neautorizovan pristup' }, { status: 401 });
     }
 
-    const danas = new Date();
-    danas.setHours(0, 0, 0, 0);
-
-    const rezultati = [];
-
-    for (const podsetnik of PODSETNICI) {
-      const granica = new Date(danas);
-      granica.setDate(granica.getDate() + podsetnik.dana);
-
-      const { data: hostingZaObnovu, error } = await supabase
-        .from('hosting')
-        .select('*, kupci (*)')
-        .not(podsetnik.polje, 'is', true)
-        .eq('placeno', false)
-        .gte('datum_obnavljanja', danas.toISOString().split('T')[0])
-        .lte('datum_obnavljanja', granica.toISOString().split('T')[0]);
-
-      if (error) {
-        console.error(`Greška pri upitu za ${podsetnik.label}:`, error);
-        continue;
-      }
-
-      for (const hosting of hostingZaObnovu) {
-        const kupac = hosting.kupci;
-
-        if (!kupac?.email) {
-          console.warn(`Kupac nema email za hosting: ${hosting.id}`);
-          continue;
-        }
-
-        try {
-          const rezultat = await posaljiPodsetnik(hosting, kupac, podsetnik);
-          rezultati.push(rezultat);
-        } catch (err) {
-          console.error(`Greška pri slanju podsetnika (${podsetnik.label}) za hosting ${hosting.id}:`, err);
-          rezultati.push({
-            hostingId: hosting.id,
-            kupac: kupac.ime,
-            email: kupac.email,
-            podsetnik: podsetnik.label,
-            uspesno: false,
-            greska: err instanceof Error ? err.message : String(err),
-          });
-        }
-      }
-    }
+    const rezultati = await pokreniPodsetnike();
 
     const uspesnih = rezultati.filter(r => r.uspesno).length;
     return NextResponse.json({

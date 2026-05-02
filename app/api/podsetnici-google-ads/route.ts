@@ -199,6 +199,59 @@ async function posaljiPodsetnik(
   };
 }
 
+export async function pokreniPodsetnike() {
+  const danas = new Date();
+  danas.setHours(0, 0, 0, 0);
+
+  const { data: svKampanje, error } = await supabase
+    .from('google_ads')
+    .select('*, kupci (*), google_ads_nastavci (*)')
+    .eq('aktivna', true);
+
+  if (error) {
+    console.error('Greška pri dohvatanju kampanja:', error);
+    throw new Error('Greška pri dohvatanju kampanja');
+  }
+
+  const rezultati = [];
+
+  for (const podsetnik of PODSETNICI) {
+    const granica = new Date(danas);
+    granica.setDate(granica.getDate() + podsetnik.dana);
+
+    for (const kampanja of svKampanje) {
+      const kupac = kampanja.kupci;
+
+      if (!kupac?.email) continue;
+      if (kampanja[podsetnik.polje]) continue;
+
+      const period = getAktuelniPeriod(kampanja);
+      if (!period) continue;
+
+      const { datumIsteka, iznos } = period;
+      if (datumIsteka < danas || datumIsteka > granica) continue;
+
+      try {
+        const rezultat = await posaljiPodsetnik(kampanja, kupac, podsetnik, datumIsteka, iznos);
+        rezultati.push(rezultat);
+      } catch (err) {
+        console.error(`Greška pri slanju podsetnika (${podsetnik.label}) za kampanju ${kampanja.id}:`, err);
+        rezultati.push({
+          kampanjaId: kampanja.id,
+          imeKampanje: kampanja.ime_kampanje,
+          kupac: kupac.ime,
+          email: kupac.email,
+          podsetnik: podsetnik.label,
+          uspesno: false,
+          greska: err instanceof Error ? err.message : String(err),
+        });
+      }
+    }
+  }
+
+  return rezultati;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');
@@ -208,59 +261,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Neautorizovan pristup' }, { status: 401 });
     }
 
-    const danas = new Date();
-    danas.setHours(0, 0, 0, 0);
-
-    // Učitaj sve aktivne kampanje sa nastavcima i kupcima
-    const { data: svKampanje, error } = await supabase
-      .from('google_ads')
-      .select('*, kupci (*), google_ads_nastavci (*)')
-      .eq('aktivna', true);
-
-    if (error) {
-      console.error('Greška pri dohvatanju kampanja:', error);
-      return NextResponse.json({ error: 'Greška pri dohvatanju kampanja' }, { status: 500 });
-    }
-
-    const rezultati = [];
-
-    for (const podsetnik of PODSETNICI) {
-      const granica = new Date(danas);
-      granica.setDate(granica.getDate() + podsetnik.dana);
-
-      for (const kampanja of svKampanje) {
-        const kupac = kampanja.kupci;
-
-        if (!kupac?.email) continue;
-
-        // Preskoči ako je podsetnik već poslat
-        if (kampanja[podsetnik.polje]) continue;
-
-        // Odredi aktuelni neplaćeni period
-        const period = getAktuelniPeriod(kampanja);
-        if (!period) continue; // Sve plaćeno
-
-        // Proveri da li datum isteka perioda pada u prozor podsetnika
-        const { datumIsteka, iznos } = period;
-        if (datumIsteka < danas || datumIsteka > granica) continue;
-
-        try {
-          const rezultat = await posaljiPodsetnik(kampanja, kupac, podsetnik, datumIsteka, iznos);
-          rezultati.push(rezultat);
-        } catch (err) {
-          console.error(`Greška pri slanju podsetnika (${podsetnik.label}) za kampanju ${kampanja.id}:`, err);
-          rezultati.push({
-            kampanjaId: kampanja.id,
-            imeKampanje: kampanja.ime_kampanje,
-            kupac: kupac.ime,
-            email: kupac.email,
-            podsetnik: podsetnik.label,
-            uspesno: false,
-            greska: err instanceof Error ? err.message : String(err),
-          });
-        }
-      }
-    }
+    const rezultati = await pokreniPodsetnike();
 
     const uspesnih = rezultati.filter(r => r.uspesno).length;
     return NextResponse.json({
