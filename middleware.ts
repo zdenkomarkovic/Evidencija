@@ -30,7 +30,8 @@ export async function middleware(request: NextRequest) {
     if (
       pathname === '/api/podsetnici' ||
       pathname === '/api/podsetnici-hosting' ||
-      pathname === '/api/podsetnici-google-ads'
+      pathname === '/api/podsetnici-google-ads' ||
+      pathname === '/api/podsetnici-svi'
     ) {
       return NextResponse.next();
     }
