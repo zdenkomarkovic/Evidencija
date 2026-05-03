@@ -175,6 +175,8 @@ export async function pokreniPodsetnike() {
     for (const hosting of hostingZaObnovu) {
       const kupac = hosting.kupci;
 
+      if (kupac?.arhiviran) continue;
+
       if (!kupac?.email) {
         console.warn(`Kupac nema email za hosting: ${hosting.id}`);
         continue;

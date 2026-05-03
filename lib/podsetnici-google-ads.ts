@@ -203,6 +203,7 @@ export async function pokreniPodsetnike() {
     for (const kampanja of svKampanje) {
       const kupac = kampanja.kupci;
 
+      if (kupac?.arhiviran) continue;
       if (!kupac?.email) continue;
       if (kampanja[podsetnik.polje]) continue;
 

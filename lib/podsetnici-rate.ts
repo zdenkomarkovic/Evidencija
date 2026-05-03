@@ -39,6 +39,8 @@ export async function pokreniPodsetnike() {
     for (const rata of rate) {
       const kupac = rata.kupci;
 
+      if (kupac?.arhiviran) continue;
+
       if (!kupac?.email) {
         console.warn(`Kupac nema email za ratu: ${rata.id}`);
         continue;
