@@ -211,7 +211,7 @@ function formatDatum(datum: Date): string {
 interface ProfakturaData {
   broj: string;
   datum: Date;
-  datumObnavljanja: Date;
+  rokZaPlacanje: Date;
   opisUsluge?: string;
   kupac: {
     ime: string;
@@ -273,7 +273,7 @@ export async function generisiProfakturaBuffer(data: ProfakturaData): Promise<Bu
           React.createElement(Text, { style: styles.naslov }, 'PROFAKTURA'),
           React.createElement(Text, { style: styles.brojDatum }, `Br. ${data.broj}`),
           React.createElement(Text, { style: styles.brojDatum }, `Datum: ${formatDatum(data.datum)}`),
-          React.createElement(Text, { style: styles.brojDatum }, `Datum obnove: ${formatDatum(data.datumObnavljanja)}`)
+          React.createElement(Text, { style: styles.brojDatum }, `Rok za plaćanje: ${formatDatum(data.rokZaPlacanje)}`)
         )
       ),
 

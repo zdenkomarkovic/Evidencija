@@ -92,10 +92,18 @@ async function posaljiPodsetnik(
     const profakturaBroj = `GA-${danas.getFullYear()}-${kampanjaId.substring(0, 8).toUpperCase()}`;
     const pozivNaBroj = await generisiPozivNaBroj(profakturaBroj);
 
+    const { data: postojeca } = await supabase
+      .from('fakture')
+      .select('id, datum_izdavanja')
+      .eq('broj_fakture', profakturaBroj)
+      .maybeSingle();
+
+    const datumIzdavanja = postojeca ? new Date(postojeca.datum_izdavanja) : danas;
+
     const pdfBuffer = await generisiProfakturaBuffer({
       broj: profakturaBroj,
-      datum: danas,
-      datumObnavljanja: datumIsteka,
+      datum: datumIzdavanja,
+      rokZaPlacanje: datumIsteka,
       opisUsluge: 'Usluga digitalnog marketinga - upravljanje Google Ads kampanjama za period od mesec dana',
       kupac: {
         ime: kupac.ime as string,
@@ -133,13 +141,6 @@ async function posaljiPodsetnik(
         contentType: 'application/pdf',
       },
     });
-
-    // Sačuvaj profakturu u bazu ako još ne postoji
-    const { data: postojeca } = await supabase
-      .from('fakture')
-      .select('id')
-      .eq('broj_fakture', profakturaBroj)
-      .maybeSingle();
 
     if (!postojeca) {
       await createFaktura(

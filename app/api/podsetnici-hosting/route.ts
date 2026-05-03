@@ -60,10 +60,18 @@ async function posaljiPodsetnik(
     const profakturaBroj = `PF-${danas.getFullYear()}-${hostingId.substring(0, 8).toUpperCase()}`;
     const pozivNaBroj = await generisiPozivNaBroj(profakturaBroj);
 
+    const { data: postojeca } = await supabase
+      .from('fakture')
+      .select('id, datum_izdavanja')
+      .eq('broj_fakture', profakturaBroj)
+      .maybeSingle();
+
+    const datumIzdavanja = postojeca ? new Date(postojeca.datum_izdavanja) : danas;
+
     const pdfBuffer = await generisiProfakturaBuffer({
       broj: profakturaBroj,
-      datum: danas,
-      datumObnavljanja: datumObnove,
+      datum: datumIzdavanja,
+      rokZaPlacanje: datumObnove,
       kupac: {
         ime: kupac.ime as string,
         firma,
@@ -105,13 +113,6 @@ async function posaljiPodsetnik(
       html: emailHtml,
       attachment: pdfAttachment,
     });
-
-    // Sačuvaj profakturu u bazu ako još ne postoji
-    const { data: postojeca } = await supabase
-      .from('fakture')
-      .select('id')
-      .eq('broj_fakture', profakturaBroj)
-      .maybeSingle();
 
     if (!postojeca) {
       await createFaktura(
