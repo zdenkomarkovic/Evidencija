@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { pokreniPodsetnike as pokreniRate } from '@/app/api/podsetnici/route';
-import { pokreniPodsetnike as pokreniHosting } from '@/app/api/podsetnici-hosting/route';
-import { pokreniPodsetnike as pokreniGoogleAds } from '@/app/api/podsetnici-google-ads/route';
+import { pokreniPodsetnike as pokreniRate } from '@/lib/podsetnici-rate';
+import { pokreniPodsetnike as pokreniHosting } from '@/lib/podsetnici-hosting';
+import { pokreniPodsetnike as pokreniGoogleAds } from '@/lib/podsetnici-google-ads';
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
